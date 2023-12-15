@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<block name="generic_func.net" instance="FPGA_packed_netlist[0]" architecture_id="SHA256:ed690e22fd156e14883e2a32275e876eda60a0cbc7eee75fb10621755a59a544" atom_netlist_id="SHA256:7fd9d0a816e8e2a2f7869d60f705ca6f986ff6521cb6aaf6ef0b4e9ed6201d81">
+	<inputs>lut_in3 lut_in2 lut_in1 lut_in0</inputs>
+	<outputs>out:lut_out</outputs>
+	<clocks></clocks>
+	<block name="lut_out" instance="clb[0]" mode="default">
+		<inputs>
+			<port name="I">lut_in1 lut_in3 lut_in0 lut_in2 open open open open open open</port>
+		</inputs>
+		<outputs>
+			<port name="O">open open open fle[3].out[0]-&gt;clbouts1</port>
+		</outputs>
+		<clocks>
+			<port name="clk">open</port>
+		</clocks>
+		<block name="open" instance="fle[0]" />
+		<block name="open" instance="fle[1]" />
+		<block name="open" instance="fle[2]" />
+		<block name="lut_out" instance="fle[3]" mode="n1_lut4">
+			<inputs>
+				<port name="in">clb.I[0]-&gt;crossbar clb.I[2]-&gt;crossbar clb.I[3]-&gt;crossbar clb.I[1]-&gt;crossbar</port>
+			</inputs>
+			<outputs>
+				<port name="out">ble4[0].out[0]-&gt;direct2</port>
+			</outputs>
+			<clocks>
+				<port name="clk">open</port>
+			</clocks>
+			<block name="lut_out" instance="ble4[0]" mode="default">
+				<inputs>
+					<port name="in">fle.in[0]-&gt;direct1 fle.in[1]-&gt;direct1 fle.in[2]-&gt;direct1 fle.in[3]-&gt;direct1</port>
+				</inputs>
+				<outputs>
+					<port name="out">lut4[0].out[0]-&gt;mux1</port>
+				</outputs>
+				<clocks>
+					<port name="clk">open</port>
+				</clocks>
+				<block name="lut_out" instance="lut4[0]" mode="lut4">
+					<inputs>
+						<port name="in">ble4.in[0]-&gt;direct1 ble4.in[1]-&gt;direct1 ble4.in[2]-&gt;direct1 ble4.in[3]-&gt;direct1</port>
+					</inputs>
+					<outputs>
+						<port name="out">lut[0].out[0]-&gt;direct:lut4</port>
+					</outputs>
+					<clocks />
+					<block name="lut_out" instance="lut[0]">
+						<attributes />
+						<parameters />
+						<inputs>
+							<port name="in">lut4.in[0]-&gt;direct:lut4 lut4.in[1]-&gt;direct:lut4 lut4.in[2]-&gt;direct:lut4 lut4.in[3]-&gt;direct:lut4</port>
+							<port_rotation_map name="in">1 0 2 3</port_rotation_map>
+						</inputs>
+						<outputs>
+							<port name="out">lut_out</port>
+						</outputs>
+						<clocks />
+					</block>
+				</block>
+				<block name="open" instance="ff[0]" />
+			</block>
+		</block>
+	</block>
+	<block name="out:lut_out" instance="io[1]" mode="outpad">
+		<inputs>
+			<port name="outpad">lut_out</port>
+		</inputs>
+		<outputs>
+			<port name="inpad">open</port>
+		</outputs>
+		<clocks />
+		<block name="out:lut_out" instance="outpad[0]">
+			<attributes />
+			<parameters />
+			<inputs>
+				<port name="outpad">io.outpad[0]-&gt;outpad</port>
+			</inputs>
+			<outputs />
+			<clocks />
+		</block>
+	</block>
+	<block name="lut_in3" instance="io[2]" mode="inpad">
+		<inputs>
+			<port name="outpad">open</port>
+		</inputs>
+		<outputs>
+			<port name="inpad">inpad[0].inpad[0]-&gt;inpad</port>
+		</outputs>
+		<clocks />
+		<block name="lut_in3" instance="inpad[0]">
+			<attributes />
+			<parameters />
+			<inputs />
+			<outputs>
+				<port name="inpad">lut_in3</port>
+			</outputs>
+			<clocks />
+		</block>
+	</block>
+	<block name="lut_in2" instance="io[3]" mode="inpad">
+		<inputs>
+			<port name="outpad">open</port>
+		</inputs>
+		<outputs>
+			<port name="inpad">inpad[0].inpad[0]-&gt;inpad</port>
+		</outputs>
+		<clocks />
+		<block name="lut_in2" instance="inpad[0]">
+			<attributes />
+			<parameters />
+			<inputs />
+			<outputs>
+				<port name="inpad">lut_in2</port>
+			</outputs>
+			<clocks />
+		</block>
+	</block>
+	<block name="lut_in1" instance="io[4]" mode="inpad">
+		<inputs>
+			<port name="outpad">open</port>
+		</inputs>
+		<outputs>
+			<port name="inpad">inpad[0].inpad[0]-&gt;inpad</port>
+		</outputs>
+		<clocks />
+		<block name="lut_in1" instance="inpad[0]">
+			<attributes />
+			<parameters />
+			<inputs />
+			<outputs>
+				<port name="inpad">lut_in1</port>
+			</outputs>
+			<clocks />
+		</block>
+	</block>
+	<block name="lut_in0" instance="io[5]" mode="inpad">
+		<inputs>
+			<port name="outpad">open</port>
+		</inputs>
+		<outputs>
+			<port name="inpad">inpad[0].inpad[0]-&gt;inpad</port>
+		</outputs>
+		<clocks />
+		<block name="lut_in0" instance="inpad[0]">
+			<attributes />
+			<parameters />
+			<inputs />
+			<outputs>
+				<port name="inpad">lut_in0</port>
+			</outputs>
+			<clocks />
+		</block>
+	</block>
+</block>
