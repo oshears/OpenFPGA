@@ -1,0 +1,47 @@
+# read_verilog ./and2_autocheck_top_tb.v
+# read_verilog SRC/routing/sb_1__1_.v
+# read_verilog SRC/routing/cby_0__1_.v
+# read_verilog SRC/routing/cby_1__1_.v
+# read_verilog SRC/routing/sb_1__0_.v
+# read_verilog SRC/routing/sb_0__1_.v
+# read_verilog SRC/routing/cbx_1__0_.v
+# read_verilog SRC/routing/sb_0__0_.v
+# read_verilog SRC/routing/cbx_1__1_.v
+# read_verilog SRC/fpga_defines.v
+# read_verilog SRC/fpga_top.v
+# read_verilog SRC/sub_module/memories.v
+# read_verilog SRC/sub_module/shift_register_banks.v
+# read_verilog SRC/sub_module/user_defined_templates.v
+# read_verilog SRC/sub_module/wires.v
+# read_verilog SRC/sub_module/luts.v
+# read_verilog SRC/sub_module/inv_buf_passgate.v
+# read_verilog SRC/sub_module/muxes.v
+# read_verilog SRC/sub_module/arch_encoder.v
+# read_verilog SRC/sub_module/local_encoder.v
+# read_verilog SRC/sub_module/mux_primitives.v
+# read_verilog SRC/and2_include_netlists.v
+# read_verilog SRC/lb/logical_tile_clb_mode_default__fle_mode_n1_lut4__ble4_mode_default__ff.v
+# read_verilog SRC/lb/logical_tile_clb_mode_default__fle_mode_n1_lut4__ble4.v
+# read_verilog SRC/lb/logical_tile_io_mode_physical__iopad.v
+# read_verilog SRC/lb/logical_tile_clb_mode_default__fle_mode_n1_lut4__ble4_mode_default__lut4.v
+# read_verilog SRC/lb/logical_tile_io_mode_io_.v
+# read_verilog SRC/lb/grid_clb.v
+# read_verilog SRC/lb/logical_tile_clb_mode_default__fle.v
+# read_verilog SRC/lb/grid_io_left.v
+# read_verilog SRC/lb/grid_io_bottom.v
+# read_verilog SRC/lb/grid_io_top.v
+# read_verilog SRC/lb/logical_tile_clb_mode_clb_.v
+# read_verilog SRC/lb/grid_io_right.v
+
+
+read_verilog SRC/fabric_netlists.v
+
+
+
+hierarchy -top fpga_top
+
+proc
+
+# flatten
+
+write_json fpga_top.json

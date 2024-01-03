@@ -5,4 +5,31 @@
 
 ```
 source /home/oshears/Documents/openfpga/OpenFPGA/openfpga.sh
+python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/generate_fabric
+```
+
+
+## Write Netlist JSON
+```
+/home/oshears/Documents/openfpga/OpenFPGA/build/yosys/bin/yosys /home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/full_testbench/configuration_chain/latest/k4_N4_tileable_40nm/and2/MIN_ROUTE_CHAN_WIDTH/yosys.ys
+```
+
+## View Netlist
+```
+netlistsvg -o out.svg /home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/full_testbench/configuration_chain/latest/k4_N4_tileable_40nm/and2/MIN_ROUTE_CHAN_WIDTH/and2_yosys_out.json
+```
+
+
+---
+
+## Write Netlist as JSON
+
+```
+/home/oshears/Documents/openfpga/OpenFPGA/build/yosys/bin/yosys /home/oshears/Documents/openfpga/OpenFPGA/debug/scripts/compile_design.ys 
+```
+
+
+## View Netlist
+```
+netlistsvg -o out.svg /home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/full_testbench/configuration_chain/latest/k4_N4_tileable_40nm/and2/MIN_ROUTE_CHAN_WIDTH/fpga_top.json
 ```
