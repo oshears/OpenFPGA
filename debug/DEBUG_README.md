@@ -51,3 +51,13 @@ source /home/oshears/Documents/openfpga/OpenFPGA/openfpga.sh
 python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/0_debug_task/unused_inputs
 ```
 
+---
+
+## Random Designs
+```
+python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/0_debug_task/random_designs --maxthreads=8 --debug
+
+rm -rf /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/random_bitstreams/*.csv
+
+tar -czvf bitstreams.tar.gz random_bitstreams/
+```

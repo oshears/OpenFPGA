@@ -1,0 +1,1 @@
+rm -rf /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/random_bitstreams/*.csv
