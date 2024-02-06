@@ -1,0 +1,442 @@
+{
+  "creator": "Yosys 0.35+58 (git sha1 8bd681acf, gcc 11.4.0-1ubuntu1~22.04 -fPIC -Os)",
+  "modules": {
+    "fpga_design": {
+      "attributes": {
+        "top": "00000000000000000000000000000001",
+        "src": "./benchmark/design.v:7.1-538.10"
+      },
+      "ports": {
+        "fpga_in_0": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "fpga_in_1": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "fpga_in_2": {
+          "direction": "input",
+          "bits": [ 4 ]
+        },
+        "fpga_in_3": {
+          "direction": "input",
+          "bits": [ 5 ]
+        },
+        "fpga_out_0": {
+          "direction": "output",
+          "bits": [ "1" ]
+        },
+        "fpga_out_1": {
+          "direction": "output",
+          "bits": [ 6 ]
+        },
+        "fpga_out_2": {
+          "direction": "output",
+          "bits": [ 7 ]
+        },
+        "fpga_out_3": {
+          "direction": "output",
+          "bits": [ 8 ]
+        },
+        "fpga_out_4": {
+          "direction": "output",
+          "bits": [ 9 ]
+        },
+        "fpga_out_5": {
+          "direction": "output",
+          "bits": [ 10 ]
+        },
+        "fpga_out_6": {
+          "direction": "output",
+          "bits": [ 11 ]
+        },
+        "fpga_out_7": {
+          "direction": "output",
+          "bits": [ 12 ]
+        },
+        "fpga_out_8": {
+          "direction": "output",
+          "bits": [ 10 ]
+        },
+        "fpga_out_9": {
+          "direction": "output",
+          "bits": [ 13 ]
+        },
+        "fpga_out_10": {
+          "direction": "output",
+          "bits": [ 14 ]
+        },
+        "fpga_out_11": {
+          "direction": "output",
+          "bits": [ 15 ]
+        },
+        "fpga_out_12": {
+          "direction": "output",
+          "bits": [ 16 ]
+        },
+        "fpga_out_13": {
+          "direction": "output",
+          "bits": [ "1" ]
+        },
+        "fpga_out_14": {
+          "direction": "output",
+          "bits": [ 17 ]
+        }
+      },
+      "cells": {
+        "$abc$906$auto$blifparse.cc:525:parse_blif$907": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "1000110111000011",
+            "WIDTH": "00000000000000000000000000000100"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 4, 2, 5, 3 ],
+            "Y": [ 17 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$908": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "01101011",
+            "WIDTH": "00000000000000000000000000000011"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 2, 3, 4 ],
+            "Y": [ 16 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$909": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "1001",
+            "WIDTH": "00000000000000000000000000000010"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3, 2 ],
+            "Y": [ 15 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$910": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "00010000",
+            "WIDTH": "00000000000000000000000000000011"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 5, 4, 2 ],
+            "Y": [ 14 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$911": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "01111100",
+            "WIDTH": "00000000000000000000000000000011"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3, 5, 2 ],
+            "Y": [ 13 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$912": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "11111000",
+            "WIDTH": "00000000000000000000000000000011"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 5, 4, 3 ],
+            "Y": [ 12 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$913": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "0001011101100000",
+            "WIDTH": "00000000000000000000000000000100"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 5, 3, 2, 4 ],
+            "Y": [ 11 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$914": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "00001110",
+            "WIDTH": "00000000000000000000000000000011"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 4, 3, 2 ],
+            "Y": [ 9 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$915": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "11000001",
+            "WIDTH": "00000000000000000000000000000011"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 5, 4, 2 ],
+            "Y": [ 7 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$916": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "1000",
+            "WIDTH": "00000000000000000000000000000010"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3, 2 ],
+            "Y": [ 6 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$917": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "01",
+            "WIDTH": "00000000000000000000000000000001"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3 ],
+            "Y": [ 10 ]
+          }
+        },
+        "$abc$906$auto$blifparse.cc:525:parse_blif$918": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "01",
+            "WIDTH": "00000000000000000000000000000001"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 4 ],
+            "Y": [ 8 ]
+          }
+        }
+      },
+      "netnames": {
+        "fpga_in_0": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "./benchmark/design.v:9.12-9.21"
+          }
+        },
+        "fpga_in_1": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "./benchmark/design.v:10.12-10.21"
+          }
+        },
+        "fpga_in_2": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "./benchmark/design.v:11.12-11.21"
+          }
+        },
+        "fpga_in_3": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "./benchmark/design.v:12.12-12.21"
+          }
+        },
+        "fpga_out_0": {
+          "hide_name": 0,
+          "bits": [ "1" ],
+          "attributes": {
+            "src": "./benchmark/design.v:13.12-13.22"
+          }
+        },
+        "fpga_out_1": {
+          "hide_name": 0,
+          "bits": [ 6 ],
+          "attributes": {
+            "src": "./benchmark/design.v:14.12-14.22"
+          }
+        },
+        "fpga_out_10": {
+          "hide_name": 0,
+          "bits": [ 14 ],
+          "attributes": {
+            "src": "./benchmark/design.v:23.12-23.23"
+          }
+        },
+        "fpga_out_11": {
+          "hide_name": 0,
+          "bits": [ 15 ],
+          "attributes": {
+            "src": "./benchmark/design.v:24.12-24.23"
+          }
+        },
+        "fpga_out_12": {
+          "hide_name": 0,
+          "bits": [ 16 ],
+          "attributes": {
+            "src": "./benchmark/design.v:25.12-25.23"
+          }
+        },
+        "fpga_out_13": {
+          "hide_name": 0,
+          "bits": [ "1" ],
+          "attributes": {
+            "src": "./benchmark/design.v:26.12-26.23"
+          }
+        },
+        "fpga_out_14": {
+          "hide_name": 0,
+          "bits": [ 17 ],
+          "attributes": {
+            "src": "./benchmark/design.v:27.12-27.23"
+          }
+        },
+        "fpga_out_2": {
+          "hide_name": 0,
+          "bits": [ 7 ],
+          "attributes": {
+            "src": "./benchmark/design.v:15.12-15.22"
+          }
+        },
+        "fpga_out_3": {
+          "hide_name": 0,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "./benchmark/design.v:16.12-16.22"
+          }
+        },
+        "fpga_out_4": {
+          "hide_name": 0,
+          "bits": [ 9 ],
+          "attributes": {
+            "src": "./benchmark/design.v:17.12-17.22"
+          }
+        },
+        "fpga_out_5": {
+          "hide_name": 0,
+          "bits": [ 10 ],
+          "attributes": {
+            "src": "./benchmark/design.v:18.12-18.22"
+          }
+        },
+        "fpga_out_6": {
+          "hide_name": 0,
+          "bits": [ 11 ],
+          "attributes": {
+            "src": "./benchmark/design.v:19.12-19.22"
+          }
+        },
+        "fpga_out_7": {
+          "hide_name": 0,
+          "bits": [ 12 ],
+          "attributes": {
+            "src": "./benchmark/design.v:20.12-20.22"
+          }
+        },
+        "fpga_out_8": {
+          "hide_name": 0,
+          "bits": [ 10 ],
+          "attributes": {
+            "src": "./benchmark/design.v:21.12-21.22"
+          }
+        },
+        "fpga_out_9": {
+          "hide_name": 0,
+          "bits": [ 13 ],
+          "attributes": {
+            "src": "./benchmark/design.v:22.12-22.22"
+          }
+        }
+      }
+    }
+  }
+}
