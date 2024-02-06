@@ -113,8 +113,7 @@ if __name__ == "__main__":
         path = "/".join([f"{primitive[0][i].attrib['name']}" for i in range(1,len(primitive[0]))])
         topModuleName = primitive[0][1].attrib["name"]
         
-        bits = [int(primitive[-1][i].attrib["value"]) for i in range(len(primitive[-1]))]
-        bits.reverse()
+        bits = [int(primitive[-1][i].attrib["value"]) for i in range(len(primitive[-1])-1,-1,-1)]
         
         node = RoutingNode("",primitive[0][-1].attrib["name"],path,len(bits),bits)
 
