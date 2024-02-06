@@ -55,7 +55,7 @@ module_order.reverse()
 
 ## Classes
 class RoutingNode:
-    def __init__(self, name="", type="", path="", size:int=1, values:[int]=None):
+    def __init__(self, name="", type="", path="", numBits:int=1, values:[int]=None):
         self.name = name
         self.type = type
         self.path = path 
@@ -63,7 +63,7 @@ class RoutingNode:
         if values:
             self.values = values   
         else:
-            self.values = size * [0]
+            self.values = numBits * [0]
 
     def setValues(self,values:[int]):
         self.values = values
@@ -71,9 +71,42 @@ class RoutingNode:
     def __str__(self) -> str:
         return f"{self.path} : {self.values.__str__()}"
     
+class IO:
+    def __init__(self, name:str="", direction:str="input"):
+        self.name = name
+        self.direction = direction
+        self.nextIO = None
+    
+    def __str__(self) -> str:
+        return f"{self.name} {'output' if self.direction else 'input'} (Next: {self.nextIO.name if self.nextIO else None})"
+    
+    def setNextIO(self,nextIO):
+        self.nextIO = nextIO
+
+class LUTNode(RoutingNode):
+    def __init__(self, name="", type="", path="", values:[int]=None):
+        super(MuxTreeSize2Node,self).__init__(name,"lut4_DFF_mem",path,16,values)
+
+class LUTFFNode(RoutingNode):
+    def __init__(self, name="", type="", path="", values:[int]=None):
+        super(MuxTreeSize2Node,self).__init__(name,"mem_ble4_out_0",path,2,values)
+
+class MuxTreeSize2Node(RoutingNode):
+    def __init__(self, name="", type="", path="", values:[int]=None):
+        super(MuxTreeSize2Node,self).__init__(name,type,path,2,values)
+
+    def getInputChoice(self) -> int:
+            if self.values[1]:
+                if self.values[0]:
+                    return 0
+                else:
+                    return 1
+            else:
+                return None
+                
 class MuxTreeSize8Node(RoutingNode):
-    def __init__(self, name="", type="", path="", size:int=1, values:[int]=None):
-        super.__init__(name,type,path,8,values)
+    def __init__(self, name="", type="", path="", values:[int]=None):
+        super(MuxTreeSize8Node,self).__init__(name,type,path,4,values)
 
     def getInputChoice(self) -> int:
         if self.values[3]:
@@ -106,11 +139,28 @@ class Module:
     def __init__(self, name, type, numBits:int=0):
         self.name = name
         self.type = type
-        self.bits = numBits=0
+        self.numBits = numBits=0
         self.nodes = []
+        self.io = {}
+        self.input2output_maps = {}
 
     def addNode(self,node:RoutingNode):
+        # self.nodes[node.path] = node
         self.nodes.append(node)
+    
+    def addIO(self, io:IO):
+        self.io[io.name] = io
+    
+    def getIO(self, ioName:str):
+        for io in self.io.keys():
+            if io == ioName:
+                return self.io[io]
+
+    def mapIO(self, inputName:str, outputName:str):
+        # self.input2output_maps[inputName] = outputName
+        inputIO = self.getIO(inputName)
+        outputIO = self.getIO(outputName)
+        inputIO.setNextIO(outputIO)
 
     def __str__(self) -> str:
         nodeStrings = [f'\t({node.__str__()})\n' for node in self.nodes]
@@ -118,21 +168,17 @@ class Module:
         return f"{self.name}:\n{nodeStrings}"
     
 
-# node = RoutingNode(2)
-# print(node)
 
 ### Tasks
+    
 ### 1. Make graph connecting each node
-
-if __name__ == "__main__":
+    
+### get modules and their bit configurations
+def getModules() -> dict[str, Module]:
     print(bitstreamFile)
     tree = ElementTree.parse(bitstreamFile)
     root = tree.getroot()
 
-
-
-    total_bit_length = 0
-    bit_dict = {}
     modules = {}
     for child in root:
         moduleName = child.attrib['name']
@@ -144,7 +190,7 @@ if __name__ == "__main__":
         
         bits = [int(primitive[-1][i].attrib["value"]) for i in range(len(primitive[-1])-1,-1,-1)]
         
-        node = RoutingNode("",primitive[0][-1].attrib["name"],path,len(bits),bits)
+        node = RoutingNode(primitive[0][-1].attrib["name"],primitive[0][-1].attrib["name"],path,len(bits),bits)
 
         modules[topModuleName].addNode(node)
         
@@ -157,4 +203,59 @@ if __name__ == "__main__":
         modules[moduleName].nodes.reverse()
         fh.write(modules[moduleName].__str__())
     fh.close()
+
+    return modules
+
+
+### get muxes and io, and map them to the modules
+def mapMuxes(modules:dict[str,Module]):
+
+    moduleName = "sb_0__0_"
+
+    # ioCsvFile
+    with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.io","r+") as ioCsvFile:
+        reader = csv.reader(ioCsvFile)
+        next(reader)
+        for io in reader:
+            if int(io[1]) == 1:
+                newIO = IO(io[0],io[2])
+                modules[moduleName].addIO(newIO)
+            else:
+                for i in range(int(io[1])):
+                    newIO = IO(io[0] + f"[{i}]",io[2])
+                    modules[moduleName].addIO(newIO)
+            
+
+    with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","r+") as muxCsvFile:
+        reader = csv.reader(muxCsvFile)
+        next(reader)
+        newNodes = []
+        for muxLine in reader:
+
+            if "wire" in muxLine[1]:
+                modules[moduleName].mapIO(muxLine[2],muxLine[4])
+
+            else:
+                for node in modules[moduleName].nodes:
+                    if node.name == "mem" + muxLine[0][3:]:
+                        if "size2" in muxLine[1]:
+
+                            newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,muxLine[1],node.path,node.values)
+                            # modules[moduleName][submoduleName] = newNode
+                            newNodes.append(newNode)
+
+                            muxChoice = newNode.getInputChoice()
+                            if muxChoice:
+                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[5])
+
+
+        modules[moduleName].nodes = newNodes
+
     
+    for io in modules[moduleName].io.values():
+        print(io)
+
+
+if __name__ == "__main__":
+    modules = getModules()
+    mapMuxes(modules)
