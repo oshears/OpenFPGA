@@ -69,9 +69,38 @@ class RoutingNode:
         self.values = values
 
     def __str__(self) -> str:
-        # return f"{self.name} : {self.values.__str__()}"
-        # return f"{self.type} : {self.values.__str__()}"
         return f"{self.path} : {self.values.__str__()}"
+    
+class MuxTreeSize8Node(RoutingNode):
+    def __init__(self, name="", type="", path="", size:int=1, values:[int]=None):
+        super.__init__(name,type,path,8,values)
+
+    def getInputChoice(self) -> int:
+        if self.values[3]:
+            if self.values[2]:
+                if self.values[1]:
+                    if self.values[0]:
+                        return 0
+                    else:
+                        return 1
+                else:
+                    return 2
+            else:
+                if self.values[1]:
+                    return 3
+                else: 
+                    return 4
+        else:
+            if self.values[2]:
+                if self.values[1]:
+                    return 5
+                else:
+                    return 6
+            else:
+                if self.values[1]:
+                    return 7
+                else:
+                    return None
 
 class Module:
     def __init__(self, name, type, numBits:int=0):
@@ -86,7 +115,7 @@ class Module:
     def __str__(self) -> str:
         nodeStrings = [f'\t({node.__str__()})\n' for node in self.nodes]
         nodeStrings = "".join(nodeStrings)
-        return f"{self.name} : \n{nodeStrings}"
+        return f"{self.name}:\n{nodeStrings}"
     
 
 # node = RoutingNode(2)
@@ -120,6 +149,7 @@ if __name__ == "__main__":
         modules[topModuleName].addNode(node)
         
     
+    ## write modules and routing nodes out to file
     fh = open(f"{baseDir}/debug/bitstream_validator/out.txt","w+")
     # fh.write(modules["cbx_1__2_"].__str__())
     for moduleName in module_order:
