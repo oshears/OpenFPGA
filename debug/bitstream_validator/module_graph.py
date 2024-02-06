@@ -50,6 +50,7 @@ module_order = [
     "cby_1__2_",
     "grid_clb_1__2_"
 ]
+module_order.reverse()
 
 
 ## Classes
@@ -124,6 +125,7 @@ if __name__ == "__main__":
     # fh.write(modules["cbx_1__2_"].__str__())
     for moduleName in module_order:
         # print(module)
+        modules[moduleName].nodes.reverse()
         fh.write(modules[moduleName].__str__())
     fh.close()
     
