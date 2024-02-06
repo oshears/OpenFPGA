@@ -1,0 +1,6 @@
+cbx_2__1_:
+	(cbx_2__1_/mem_top_ipin_2 : [0, 0, 0, 0])
+	(cbx_2__1_/mem_top_ipin_1 : [0, 0, 0, 0])
+	(cbx_2__1_/mem_top_ipin_0 : [0, 1, 1, 0])
+	(cbx_2__1_/mem_bottom_ipin_1 : [0, 0, 0, 0])
+	(cbx_2__1_/mem_bottom_ipin_0 : [0, 0, 0, 0])

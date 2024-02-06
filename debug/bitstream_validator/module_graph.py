@@ -196,12 +196,15 @@ def getModules() -> dict[str, Module]:
         
     
     ## write modules and routing nodes out to file
-    fh = open(f"{baseDir}/debug/bitstream_validator/out.txt","w+")
+    fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/bit_configs/fullConfig.bit","w+")
     # fh.write(modules["cbx_1__2_"].__str__())
     for moduleName in module_order:
         # print(module)
         modules[moduleName].nodes.reverse()
         fh.write(modules[moduleName].__str__())
+        fh_module = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/bit_configs/{moduleName}.bit","w+")
+        fh_module.write(modules[moduleName].__str__())
+        fh_module.close()
     fh.close()
 
     return modules
