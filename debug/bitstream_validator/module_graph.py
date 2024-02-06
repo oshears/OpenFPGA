@@ -96,8 +96,8 @@ class MuxTreeSize2Node(RoutingNode):
         super(MuxTreeSize2Node,self).__init__(name,type,path,2,values)
 
     def getInputChoice(self) -> int:
-            if self.values[1]:
-                if self.values[0]:
+            if self.values[0]:
+                if self.values[1]:
                     return 0
                 else:
                     return 1
@@ -109,28 +109,28 @@ class MuxTreeSize8Node(RoutingNode):
         super(MuxTreeSize8Node,self).__init__(name,type,path,4,values)
 
     def getInputChoice(self) -> int:
-        if self.values[3]:
-            if self.values[2]:
-                if self.values[1]:
-                    if self.values[0]:
+        if self.values[0]:
+            if self.values[1]:
+                if self.values[2]:
+                    if self.values[3]:
                         return 0
                     else:
                         return 1
                 else:
                     return 2
             else:
-                if self.values[1]:
+                if self.values[3]:
                     return 3
                 else: 
                     return 4
         else:
-            if self.values[2]:
-                if self.values[1]:
+            if self.values[1]:
+                if self.values[2]:
                     return 5
                 else:
                     return 6
             else:
-                if self.values[1]:
+                if self.values[2]:
                     return 7
                 else:
                     return None
@@ -240,7 +240,8 @@ def mapMuxes(modules:dict[str,Module]):
 
             else:
                 for node in modules[moduleName].nodes:
-                    if node.name == "mem" + muxLine[0][3:]:
+                    muxMemName = "mem" + muxLine[0][3:]
+                    if node.name == muxMemName:
                         if "size2" in muxLine[1]:
 
                             newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,muxLine[1],node.path,node.values)
@@ -248,8 +249,17 @@ def mapMuxes(modules:dict[str,Module]):
                             newNodes.append(newNode)
 
                             muxChoice = newNode.getInputChoice()
-                            if muxChoice:
-                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[5])
+                            if muxChoice != None:
+                                print(f"{muxLine[2+muxChoice]}")
+                                print(f"{muxLine[4]}")
+                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[4])
+                            else:
+                                if ("".join(map(str,node.values)) != "00"):
+                                    print("Routing node was not defaulted but still returned CONST1")
+                                    print(f"\tValues: {node.values}")
+
+                            # else:
+                            #     print("NO MATCH")
 
 
         modules[moduleName].nodes = newNodes
