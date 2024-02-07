@@ -125,17 +125,17 @@ def mapMuxes(modules:dict[str,Module]):
         "sb_2__1_":"sb_2__1_",
         "sb_2__2_":"sb_2__2_",
         "cbx_1__0_":"cbx_1__0_",
-        "cbx_1__0_":"cbx_2__0_",
+        "cbx_2__0_":"cbx_1__0_",
         "cbx_1__1_":"cbx_1__1_",
-        "cbx_1__1_":"cbx_2__1_",
+        "cbx_2__1_":"cbx_1__1_",
         "cbx_1__2_":"cbx_1__2_",
-        "cbx_1__2_":"cbx_2__2_",
+        "cbx_2__2_":"cbx_1__2_",
         "cby_0__1_":"cby_0__1_",
-        "cby_0__1_":"cby_0__2_",
+        "cby_0__2_":"cby_0__1_",
         "cby_1__1_":"cby_1__1_",
-        "cby_1__1_":"cby_1__2_",
+        "cby_1__2_":"cby_1__1_",
         "cby_2__1_":"cby_2__1_",
-        "cby_2__1_":"cby_2__2_",
+        "cby_2__2_":"cby_2__1_",
     }
 
     for moduleName, module in modules.items():
@@ -163,28 +163,42 @@ def mapMuxes(modules:dict[str,Module]):
                 newNodes = []
                 for muxLine in reader:
 
-                    if "wire" in muxLine[1]:
-                        modules[moduleName].mapIO(muxLine[2],muxLine[-1])
+                    fixedMuxLine = []
+                    for entry in muxLine: 
+                        if x := re.match(r"(.+)\[(\d+):(\d+)\]",entry):
+                            fixedMuxLine.append(x.group(1) + f"[{x.group(2)}]")
+                            fixedMuxLine.append(x.group(1) + f"[{x.group(3)}]")
+                        else:
+                            fixedMuxLine.append(entry)
+
+                    if "wire" in fixedMuxLine[1]:
+                        modules[moduleName].mapIO(fixedMuxLine[2],fixedMuxLine[-1])
 
                     else:
                         for node in modules[moduleName].nodes:
                             
-                            muxMemName = "mem" + muxLine[0][3:]
+                            muxMemName = "mem" + fixedMuxLine[0][3:]
 
                             if node.name == muxMemName:
                                 
                                 newNode = None
 
-                                if "size2" in muxLine[1]:
-                                    newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,muxLine[1],node.path,node.values)
-                                elif "size3" in muxLine[1]:
-                                    newNode:MuxTreeSize3Node = MuxTreeSize3Node(node.name,muxLine[1],node.path,node.values)
-                                elif "size5" in muxLine[1]:
-                                    newNode:MuxTreeSize5Node = MuxTreeSize5Node(node.name,muxLine[1],node.path,node.values)
-                                elif "size8" in muxLine[1]:
-                                    newNode:MuxTreeSize8Node = MuxTreeSize8Node(node.name,muxLine[1],node.path,node.values)
-                                elif "size9" in muxLine[1]:
-                                    newNode:MuxTreeSize9Node = MuxTreeSize9Node(node.name,muxLine[1],node.path,node.values)
+                                if "size2" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,fixedMuxLine[1],node.path,node.values)
+                                elif "size3" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize3Node = MuxTreeSize3Node(node.name,fixedMuxLine[1],node.path,node.values)
+                                elif "size4" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize4Node = MuxTreeSize4Node(node.name,fixedMuxLine[1],node.path,node.values)
+                                elif "size5" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize5Node = MuxTreeSize5Node(node.name,fixedMuxLine[1],node.path,node.values)
+                                elif "size8" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize8Node = MuxTreeSize8Node(node.name,fixedMuxLine[1],node.path,node.values)
+                                elif "size9" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize9Node = MuxTreeSize9Node(node.name,fixedMuxLine[1],node.path,node.values)
+                                elif "size11" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize11Node = MuxTreeSize11Node(node.name,fixedMuxLine[1],node.path,node.values)
+                                elif "size12" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize12Node = MuxTreeSize12Node(node.name,fixedMuxLine[1],node.path,node.values)
 
 
                                 newNodes.append(newNode)
@@ -192,7 +206,7 @@ def mapMuxes(modules:dict[str,Module]):
                                 muxChoice = newNode.getInputChoice()
 
                                 if muxChoice != None:
-                                    modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[-1])
+                                    modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1])
                                 else:
                                     if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
                                         print("Routing node was not defaulted but still returned CONST1")
@@ -208,21 +222,21 @@ def mapMuxes(modules:dict[str,Module]):
 
 def parseModules():
 
-    files = [   #"sb_0__2_",
+    files = [   "sb_0__2_",
                 "sb_0__1_",
-                # "sb_1__0_",
-                # "sb_1__1_",
-                # "sb_1__2_",
-                # "sb_2__1_",
-                # "sb_2__0_",
-                # "sb_2__2_",
-                # "cbx_1__1_",
-                # "cbx_1__0_",
-                # "cby_1__1_",
-                # "cby_0__1_",
-                # "cbx_1__2_",
-                # "cby_2__1_",
-                # "sb_0__0_"
+                "sb_1__0_",
+                "sb_1__1_",
+                "sb_1__2_",
+                "sb_2__1_",
+                "sb_2__0_",
+                "sb_2__2_",
+                "cbx_1__1_",
+                "cbx_1__0_",
+                "cby_1__1_",
+                "cby_0__1_",
+                "cbx_1__2_",
+                "cby_2__1_",
+                "sb_0__0_"
             ]
     
 

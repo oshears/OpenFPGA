@@ -64,7 +64,26 @@ class MuxTreeSize3Node(RoutingNode):
                     return 2
                 else:
                     return None
-                
+
+class MuxTreeSize4Node(RoutingNode):
+    def __init__(self, name="", type="", path="", values:[int]=None):
+        super(MuxTreeSize4Node,self).__init__(name,type,path,3,values)
+
+    def getInputChoice(self) -> int:
+        if self.values[0]:
+            if self.values[1]:
+                if self.values[2]:
+                    return 0
+                else:
+                    return 1
+            else:
+                return 2
+        else:
+            if self.values[1]:
+                return 3
+            else:
+                return None
+
 class MuxTreeSize5Node(RoutingNode):
     def __init__(self, name="", type="", path="", values:[int]=None):
         super(MuxTreeSize5Node,self).__init__(name,type,path,3,values)
@@ -151,6 +170,89 @@ class MuxTreeSize9Node(RoutingNode):
                 if self.values[2]:
                     return 8
                 else:
+                    return None
+
+class MuxTreeSize11Node(RoutingNode):
+    def __init__(self, name="", type="", path="", values:[int]=None):
+        super(MuxTreeSize11Node,self).__init__(name,type,path,4,values)
+
+    def getInputChoice(self) -> int:
+        if self.values[0]:
+            if self.values[1]:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 0
+                    else:
+                        return 1
+                else:
+                    if self.values[3]:
+                        return 2
+                    else:
+                        return 3
+            else:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 4
+                    else:
+                        return 5
+                else:
+                    if self.values[3]:
+                        return 6
+                    else:
+                        return 7
+        else:
+            if self.values[1]:
+                if self.values[2]:
+                    return 8
+                else:
+                    return 9
+            else:
+                if self.values[2]:
+                    return 10
+                else: 
+                    return None
+
+class MuxTreeSize12Node(RoutingNode):
+    def __init__(self, name="", type="", path="", values:[int]=None):
+        super(MuxTreeSize12Node,self).__init__(name,type,path,4,values)
+
+    def getInputChoice(self) -> int:
+        if self.values[0]:
+            if self.values[1]:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 0
+                    else:
+                        return 1
+                else:
+                    if self.values[3]:
+                        return 2
+                    else:
+                        return 3
+            else:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 4
+                    else:
+                        return 5
+                else:
+                    if self.values[3]:
+                        return 6
+                    else:
+                        return 7
+        else:
+            if self.values[1]:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 8
+                    else:
+                        return 9
+                else:
+                    return 10
+            else:
+                if self.values[2]:
+                    return 11
+                else: 
                     return None
 
 class Module:
