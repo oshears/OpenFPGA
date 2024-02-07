@@ -20,13 +20,14 @@ class RoutingNode:
         return f"{self.path} : {self.values.__str__()}"
     
 class IO:
-    def __init__(self, name:str="", direction:str="input"):
+    def __init__(self, name:str="", module:str="", direction:str="input"):
         self.name = name
         self.direction = direction
         self.nextIO = None
+        self.moduleName = module
     
     def __str__(self) -> str:
-        return f"{self.name} {'output' if self.direction else 'input'} (Next: {self.nextIO.name if self.nextIO else None})"
+        return f"{self.moduleName}.{self.name} {'output' if self.direction else 'input'} (Next: {f'{self.nextIO.moduleName}.{self.nextIO.name}' if self.nextIO else None})"
     
     def setNextIO(self,nextIO):
         self.nextIO = nextIO
@@ -64,8 +65,8 @@ class Module:
         return f"{self.name}:\n{nodeStrings}"
 
 class CLB_IO(IO):
-    def __init__(self, driverName:str="", ioName:str="",idx=-1, input_idx=-1):
-        super(CLB_IO,self).__init__(driverName,"clb_io")
+    def __init__(self, driverName:str="", module:str="", ioName:str="",idx=-1, input_idx=-1):
+        super(CLB_IO,self).__init__(driverName,module,"clb_io")
         self.idx = idx
         self.input_idx = input_idx
         self.driverName = driverName
@@ -92,7 +93,7 @@ class CLBModule(Module):
         if x := re.match(r"mem_fle_(\d+)_in_(\d+)", node.name):
             # fle_num = int(x.group(1))
             # fle_input = int(x.group(2))
-            fleInput = CLB_IO(inputName,outputName,int(x.group(1)),int(x.group(2)))
+            fleInput = CLB_IO(inputName,self.name,outputName,int(x.group(1)),int(x.group(2)))
             fleInput.setNextIO( CLB(int(x.group(1)),int(x.group(2))) )
             self.addIO(fleInput)
 

@@ -102,11 +102,11 @@ def mapMuxes(modules:dict[str,Module]):
                 # next(reader)
                 for io in reader:
                     if int(io[1]) == 1:
-                        newIO = IO(io[0],io[2])
+                        newIO = IO(io[0], moduleName, io[2])
                         modules[moduleName].addIO(newIO)
                     else:
                         for i in range(int(io[1])):
-                            newIO = IO(io[0] + f"[{i}]",io[2])
+                            newIO = IO(io[0] + f"[{i}]", moduleName, io[2])
                             modules[moduleName].addIO(newIO)
                     
             # muxCsvFile
@@ -296,15 +296,3 @@ def parseModules():
 
 
         mux_fh.close()
-
-def displayRoutes(modules:[str, Module]):
-    fh = open(f"{baseDir}/debug/bitstream_validator/outRoutes.txt","w+")
-    for modName, mod in modules.items():
-        fh.write(f"{modName}\n")
-        for io in mod.io.values():
-            if io.nextIO != None:
-                fh.write(f"\t{io}\n")
-    fh.close()
-
-
-

@@ -16,6 +16,14 @@ class Connection:
             raise Exception("Error: Attempted to add null connection")
         self.connections.append(connection)
         self.modules.append(moduleName)
+
+    def makeLinks(self):
+        if len(self.connections) > 1:
+            if self.connections[0].nextIO == None and self.connections[1].nextIO != None:
+                self.connections[0].setNextIO(self.connections[1])
+            elif self.connections[1].nextIO == None and self.connections[0].nextIO != None:
+                self.connections[1].setNextIO(self.connections[0])
+
     
     def __str__(self):
         if len(self.connections) >= 2:
@@ -88,6 +96,7 @@ def parseTop(modules):
                         wires[wireName].addConnection(currModule,moduleIO)
 
     for wire in wires.values():
+        wire.makeLinks()
         print(wire)
 
     return wires
