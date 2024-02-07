@@ -1,5 +1,6 @@
 from xml.etree import ElementTree
 import csv
+import re
 
 baseDir = "/home/oshears/Documents/openfpga/OpenFPGA"
 
@@ -245,48 +246,84 @@ def mapMuxes(modules:dict[str,Module]):
                     muxMemName = "mem" + muxLine[0][3:]
 
                     if node.name == muxMemName:
+                        
+                        newNode = None
 
                         if "size2" in muxLine[1]:
-
                             newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,muxLine[1],node.path,node.values)
-                            newNodes.append(newNode)
-
-                            muxChoice = newNode.getInputChoice()
-                            if muxChoice != None:
-                                print(f"{muxLine[2+muxChoice]}")
-                                print(f"{muxLine[-1]}")
-                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[-1])
-                            else:
-                                if ("".join(map(str,node.values)) != "00"):
-                                    print("Routing node was not defaulted but still returned CONST1")
-                                    print(f"\tValues: {node.values}")
-
-                        if "size8" in muxLine[1]:
-
+                        elif "size8" in muxLine[1]:
                             newNode:MuxTreeSize2Node = MuxTreeSize8Node(node.name,muxLine[1],node.path,node.values)
-                            newNodes.append(newNode)
 
-                            muxChoice = newNode.getInputChoice()
-                            if muxChoice != None:
-                                print(f"{muxLine[2+muxChoice]}")
-                                print(f"{muxLine[-1]}")
-                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[-1])
-                            else:
-                                if ("".join(map(str,node.values)) != "0000"):
-                                    print("Routing node was not defaulted but still returned CONST1")
-                                    print(f"\tValues: {node.values}")
+                        newNodes.append(newNode)
 
-                            # else:
-                            #     print("NO MATCH")
+                        muxChoice = newNode.getInputChoice()
+
+                        if muxChoice != None:
+                            modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[-1])
+                        else:
+                            if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
+                                print("Routing node was not defaulted but still returned CONST1")
+                                print(f"\tValues: {node.values}")
 
 
         modules[moduleName].nodes = newNodes
 
     
-    for io in modules[moduleName].io.values():
-        print(io)
+    # for io in modules[moduleName].io.values():
+    #     if io.nextIO != None:
+    #         print(io)
+
+def parseModules():
+
+    files = [   "sb_0__2_",
+                "sb_0__1_",
+                "sb_1__0_",
+                "sb_1__1_",
+                "sb_1__2_",
+                "sb_2__1_",
+                "sb_2__0_",
+                "sb_2__2_",
+                "cbx_1__1_",
+                "cbx_1__0_",
+                "cby_1__1_",
+                "cby_0__1_",
+                "cbx_1__2_",
+                "cby_2__1_",
+                "sb_0__0_"
+            ]
+    
+
+    for moduleName in files:
+
+        verilog_fh = open(f"{resultsPath}/SRC/routing/{moduleName}.v","r+")
+        verilogFileLines = verilog_fh.readlines()
+
+        # IO file creation
+        io_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.io","w+")
+
+        io_fh.write("name,size,direction\n")
+        for line in verilogFileLines:
+            if ("prog_clk" not in line) and ("ccff_head" not in line) and ("ccff_tail" not in line):
+                if x := re.match(r"(input) \[\d:(\d+)\] (.+);",line):
+                    # print(line.strip())
+                    # print(x.groups())
+                    io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
+                elif x := re.match(r"(output) \[\d:(\d+)\] (.+);",line):
+                    # print(line.strip())
+                    # print(x.groups())
+                    io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
+        io_fh.close()
+
+
+        verilog_fh.close()
+
+        # Mux file creation
+        # mux_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","w+")
+
+
 
 
 if __name__ == "__main__":
     modules = getModules()
+    parseModules()
     mapMuxes(modules)
