@@ -54,3 +54,8 @@ vpr/vpr
 node_modules
 package-lock.json
 /_*/ 
+
+
+## Misc Files
+env
+.env

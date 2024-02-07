@@ -213,7 +213,8 @@ def getModules() -> dict[str, Module]:
 ### get muxes and io, and map them to the modules
 def mapMuxes(modules:dict[str,Module]):
 
-    moduleName = "sb_0__0_"
+    # moduleName = "sb_0__0_"
+    moduleName = "cbx_1__2_"
 
     # ioCsvFile
     with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.io","r+") as ioCsvFile:
@@ -236,25 +237,42 @@ def mapMuxes(modules:dict[str,Module]):
         for muxLine in reader:
 
             if "wire" in muxLine[1]:
-                modules[moduleName].mapIO(muxLine[2],muxLine[4])
+                modules[moduleName].mapIO(muxLine[2],muxLine[-1])
 
             else:
                 for node in modules[moduleName].nodes:
+                    
                     muxMemName = "mem" + muxLine[0][3:]
+
                     if node.name == muxMemName:
+
                         if "size2" in muxLine[1]:
 
                             newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,muxLine[1],node.path,node.values)
-                            # modules[moduleName][submoduleName] = newNode
                             newNodes.append(newNode)
 
                             muxChoice = newNode.getInputChoice()
                             if muxChoice != None:
                                 print(f"{muxLine[2+muxChoice]}")
-                                print(f"{muxLine[4]}")
-                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[4])
+                                print(f"{muxLine[-1]}")
+                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[-1])
                             else:
                                 if ("".join(map(str,node.values)) != "00"):
+                                    print("Routing node was not defaulted but still returned CONST1")
+                                    print(f"\tValues: {node.values}")
+
+                        if "size8" in muxLine[1]:
+
+                            newNode:MuxTreeSize2Node = MuxTreeSize8Node(node.name,muxLine[1],node.path,node.values)
+                            newNodes.append(newNode)
+
+                            muxChoice = newNode.getInputChoice()
+                            if muxChoice != None:
+                                print(f"{muxLine[2+muxChoice]}")
+                                print(f"{muxLine[-1]}")
+                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[-1])
+                            else:
+                                if ("".join(map(str,node.values)) != "0000"):
                                     print("Routing node was not defaulted but still returned CONST1")
                                     print(f"\tValues: {node.values}")
 
