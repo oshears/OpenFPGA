@@ -1,3 +1,5 @@
+import re
+
 ## Classes
 class RoutingNode:
     def __init__(self, name="", type="", path="", numBits:int=1, values:[int]=None):
@@ -254,7 +256,55 @@ class MuxTreeSize12Node(RoutingNode):
                     return 11
                 else: 
                     return None
+                
+class MuxTreeSize14Node(RoutingNode):
+    def __init__(self, name="", type="", path="", values:[int]=None):
+        super(MuxTreeSize14Node,self).__init__(name,type,path,4,values)
 
+    def getInputChoice(self) -> int:
+        if self.values[0]:
+            if self.values[1]:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 0
+                    else:
+                        return 1
+                else:
+                    if self.values[3]:
+                        return 2
+                    else:
+                        return 3
+            else:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 4
+                    else:
+                        return 5
+                else:
+                    if self.values[3]:
+                        return 6
+                    else:
+                        return 7
+        else:
+            if self.values[1]:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 8
+                    else:
+                        return 9
+                else:
+                    if self.values[3]:
+                        return 10
+                    else:
+                        return 11
+            else:
+                if self.values[2]:
+                    if self.values[3]:
+                        return 12
+                    else:
+                        return 13
+                else:
+                    return None
 class Module:
     def __init__(self, name, type, numBits:int=0):
         self.name = name
@@ -276,7 +326,7 @@ class Module:
             if io == ioName:
                 return self.io[io]
 
-    def mapIO(self, inputName:str, outputName:str):
+    def mapIO(self, inputName:str, outputName:str, node=None):
         # self.input2output_maps[inputName] = outputName
         inputIO = self.getIO(inputName)
         outputIO = self.getIO(outputName)
@@ -286,3 +336,36 @@ class Module:
         nodeStrings = [f'\t({node.__str__()})\n' for node in self.nodes]
         nodeStrings = "".join(nodeStrings)
         return f"{self.name}:\n{nodeStrings}"
+
+class CLB_IO(IO):
+    def __init__(self, driverName:str="", ioName:str="",idx=-1, input_idx=-1):
+        super(CLB_IO,self).__init__(driverName,"clb_io")
+        self.idx = idx
+        self.input_idx = input_idx
+        self.driverName = driverName
+        self.ioName = ioName
+
+    def __str__(self) -> str:
+        if self.idx > -1 and self.input_idx > -1:
+            return f"{self.driverName} => {self.ioName} => FLE_{self.idx}.I_{self.input_idx}"
+        else:
+            return f"{self.name} 'wire' (Next: {self.nextIO.name if self.nextIO else None})"
+
+class CLB:
+    def __init__(self, idx=-1, input_idx=-1):
+        self.idx = idx
+        self.input_idx = input_idx
+
+class CLBModule(Module):
+    def __init__(self, name, type, numBits:int=0):
+        super(CLBModule,self).__init__(name,type,numBits)
+
+        self.internalIO = {}
+
+    def mapIO(self, inputName:str, outputName:str, node):
+        if x := re.match(r"mem_fle_(\d+)_in_(\d+)", node.name):
+            # fle_num = int(x.group(1))
+            # fle_input = int(x.group(2))
+            fleInput = CLB_IO(inputName,outputName,int(x.group(1)),int(x.group(2)))
+            fleInput.setNextIO( CLB(int(x.group(1)),int(x.group(2))) )
+            self.addIO(fleInput)

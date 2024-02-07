@@ -68,7 +68,11 @@ def getModules() -> dict[str, Module]:
     modules = {}
     for child in root:
         moduleName = child.attrib['name']
-        modules[moduleName] = Module(child.attrib['name'],"")
+
+        if "clb" in moduleName: 
+            modules[moduleName] = CLBModule(child.attrib['name'],"")
+        else:
+            modules[moduleName] = Module(child.attrib['name'],"")
         
     for primitive in root.findall(".//bitstream/.."): # iterate through all nodes with a bitstream child
         path = "/".join([f"{primitive[0][i].attrib['name']}" for i in range(1,len(primitive[0]))])
@@ -103,18 +107,18 @@ def mapMuxes(modules:dict[str,Module]):
     # moduleName = "cbx_1__2_"
 
     module_mappings = {
-        # "grid_io_top":"grid_io_top_1__3_",
-        # "grid_io_top":"grid_io_top_2__3_",
-        # "grid_io_right":"grid_io_right_3__2_",
-        # "grid_io_right":"grid_io_right_3__1_",
-        # "grid_io_bottom":"grid_io_bottom_2__0_",
-        # "grid_io_bottom":"grid_io_bottom_1__0_",
-        # "grid_io_left":"grid_io_left_0__1_",
-        # "grid_io_left":"grid_io_left_0__2_",
-        # "grid_clb":"grid_clb_1__1_",
-        # "grid_clb":"grid_clb_1__2_",
-        # "grid_clb":"grid_clb_2__1_",
-        # "grid_clb":"grid_clb_2__2_",
+        # "grid_io_top_1__3_":"grid_io_top",
+        # "grid_io_top_2__3_":"grid_io_top",
+        # "grid_io_right_3__2_":"grid_io_right",
+        # "grid_io_right_3__1_":"grid_io_right",
+        # "grid_io_bottom_2__0_":"grid_io_bottom",
+        # "grid_io_bottom_1__0_":"grid_io_bottom",
+        # "grid_io_left_0__1_":"grid_io_left",
+        # "grid_io_left_0__2_":"grid_io_left",
+        "grid_clb_1__1_":"logical_tile_clb_mode_clb_",
+        "grid_clb_1__2_":"logical_tile_clb_mode_clb_",
+        "grid_clb_2__1_":"logical_tile_clb_mode_clb_",
+        "grid_clb_2__2_":"logical_tile_clb_mode_clb_",
         "sb_0__0_":"sb_0__0_",
         "sb_0__1_":"sb_0__1_",
         "sb_0__2_":"sb_0__2_",
@@ -199,6 +203,8 @@ def mapMuxes(modules:dict[str,Module]):
                                     newNode:MuxTreeSize11Node = MuxTreeSize11Node(node.name,fixedMuxLine[1],node.path,node.values)
                                 elif "size12" in fixedMuxLine[1]:
                                     newNode:MuxTreeSize12Node = MuxTreeSize12Node(node.name,fixedMuxLine[1],node.path,node.values)
+                                elif "size14" in fixedMuxLine[1]:
+                                    newNode:MuxTreeSize14Node = MuxTreeSize14Node(node.name,fixedMuxLine[1],node.path,node.values)
 
 
                                 newNodes.append(newNode)
@@ -206,7 +212,7 @@ def mapMuxes(modules:dict[str,Module]):
                                 muxChoice = newNode.getInputChoice()
 
                                 if muxChoice != None:
-                                    modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1])
+                                    modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1],newNode)
                                 else:
                                     if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
                                         print("Routing node was not defaulted but still returned CONST1")
@@ -220,9 +226,52 @@ def mapMuxes(modules:dict[str,Module]):
         #     if io.nextIO != None:
         #         print(io)
 
+    return modules
+
 def parseModules():
 
-    files = [   "sb_0__2_",
+    all_files = [   "sb_0__2_",
+                    "sb_0__1_",
+                    "sb_1__0_",
+                    "sb_1__1_",
+                    "sb_1__2_",
+                    "sb_2__1_",
+                    "sb_2__0_",
+                    "sb_2__2_",
+                    "cbx_1__1_",
+                    "cbx_1__0_",
+                    "cby_1__1_",
+                    "cby_0__1_",
+                    "cbx_1__2_",
+                    "cby_2__1_",
+                    "sb_0__0_",
+                    "logical_tile_clb_mode_clb_"
+            ]
+    ## Parse IO for All Modules
+    for moduleName in all_files:
+        verilog_fh = None
+        if "clb" not in moduleName:
+            verilog_fh = open(f"{resultsPath}/SRC/routing/{moduleName}.v","r+")
+        else:
+            verilog_fh = open(f"{resultsPath}/SRC/lb/{moduleName}.v","r+")
+        verilogFileLines = verilog_fh.readlines()
+        verilog_fh.close()
+
+        # IO file creation
+        io_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.io","w+")
+
+        # io_fh.write("name,size,direction\n")
+        for line in verilogFileLines:
+            parseLine = ("prog_clk" not in line) and ("ccff_head" not in line) and ("ccff_tail" not in line) and ("set" not in line) and ("reset" not in line) and ("clk" not in line)
+            if parseLine:
+                if x := re.match(r"(input) \[\d:(\d+)\] (.+);",line):
+                    io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
+                elif x := re.match(r"(output) \[\d:(\d+)\] (.+);",line):
+                    io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
+        io_fh.close()
+
+    ## For Switch Box and CB Modules
+    routing_files = [   "sb_0__2_",
                 "sb_0__1_",
                 "sb_1__0_",
                 "sb_1__1_",
@@ -236,28 +285,17 @@ def parseModules():
                 "cby_0__1_",
                 "cbx_1__2_",
                 "cby_2__1_",
-                "sb_0__0_"
+                "sb_0__0_",
+                "logical_tile_clb_mode_clb_"
             ]
-    
-
-    for moduleName in files:
-
-        verilog_fh = open(f"{resultsPath}/SRC/routing/{moduleName}.v","r+")
+    for moduleName in routing_files:
+        verilog_fh = None
+        if "clb" not in moduleName:
+            verilog_fh = open(f"{resultsPath}/SRC/routing/{moduleName}.v","r+")
+        else:
+            verilog_fh = open(f"{resultsPath}/SRC/lb/{moduleName}.v","r+")
         verilogFileLines = verilog_fh.readlines()
         verilog_fh.close()
-
-        # IO file creation
-        io_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.io","w+")
-
-        # io_fh.write("name,size,direction\n")
-        for line in verilogFileLines:
-            if ("prog_clk" not in line) and ("ccff_head" not in line) and ("ccff_tail" not in line):
-                if x := re.match(r"(input) \[\d:(\d+)\] (.+);",line):
-                    io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
-                elif x := re.match(r"(output) \[\d:(\d+)\] (.+);",line):
-                    io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
-        io_fh.close()
-
 
         # Mux file creation
         mux_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","w+")
@@ -285,7 +323,12 @@ def parseModules():
                 if x := re.match(r"\t\t.in\({(.*)}", line):
                     muxInputs = x.group(1).split(",")
                     for muxInput in muxInputs:
-                        muxConfig.append(muxInput.strip())
+                        if y := re.match(r"\s*(.+)\[(\d+):(\d+)\]",muxInput):
+                            size = int(y.group(3))
+                            for i in range(size):
+                                muxConfig.append(f"{y.group(1)}[{i}]")
+                        else:
+                            muxConfig.append(muxInput.strip())
                     state = 2
             elif state == 2:
                 if x := re.match(r"\t\t.out\((.*)\)\);", line):
@@ -305,9 +348,19 @@ def parseModules():
 
         mux_fh.close()
 
+def displayRoutes(modules:[str, Module]):
+    fh = open(f"{baseDir}/debug/bitstream_validator/outRoutes.txt","w+")
+    for modName, mod in modules.items():
+        fh.write(f"{modName}\n")
+        for io in mod.io.values():
+            if io.nextIO != None:
+                fh.write(f"\t{io}\n")
+    fh.close()
+
 
 
 if __name__ == "__main__":
-    modules = getModules()
+    modules:dict[str, Module] = getModules()
     parseModules()
     mapMuxes(modules)
+    displayRoutes(modules)
