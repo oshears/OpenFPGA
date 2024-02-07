@@ -1,4 +1,5 @@
-import re
+from . import *
+# from __init__ import *
 
 ## Classes
 class RoutingNode:
@@ -29,6 +30,71 @@ class IO:
     
     def setNextIO(self,nextIO):
         self.nextIO = nextIO
+
+class Module:
+    def __init__(self, name, type, numBits:int=0):
+        self.name = name
+        self.type = type
+        self.numBits = numBits=0
+        self.nodes = []
+        self.io:[str, IO] = {}
+        self.input2output_maps = {}
+
+    def addNode(self,node:RoutingNode):
+        # self.nodes[node.path] = node
+        self.nodes.append(node)
+    
+    def addIO(self, io:IO):
+        self.io[io.name] = io
+    
+    def getIO(self, ioName:str) -> IO:
+        for io in self.io.keys():
+            if io == ioName:
+                return self.io[io]
+
+    def mapIO(self, inputName:str, outputName:str, node=None):
+        # self.input2output_maps[inputName] = outputName
+        inputIO = self.getIO(inputName)
+        outputIO = self.getIO(outputName)
+        inputIO.setNextIO(outputIO)
+
+    def __str__(self) -> str:
+        nodeStrings = [f'\t({node.__str__()})\n' for node in self.nodes]
+        nodeStrings = "".join(nodeStrings)
+        return f"{self.name}:\n{nodeStrings}"
+
+class CLB_IO(IO):
+    def __init__(self, driverName:str="", ioName:str="",idx=-1, input_idx=-1):
+        super(CLB_IO,self).__init__(driverName,"clb_io")
+        self.idx = idx
+        self.input_idx = input_idx
+        self.driverName = driverName
+        self.ioName = ioName
+
+    def __str__(self) -> str:
+        if self.idx > -1 and self.input_idx > -1:
+            return f"{self.driverName} => {self.ioName} => FLE_{self.idx}.I_{self.input_idx}"
+        else:
+            return f"{self.name} 'wire' (Next: {self.nextIO.name if self.nextIO else None})"
+
+class CLB:
+    def __init__(self, idx=-1, input_idx=-1):
+        self.idx = idx
+        self.input_idx = input_idx
+
+class CLBModule(Module):
+    def __init__(self, name, type, numBits:int=0):
+        super(CLBModule,self).__init__(name,type,numBits)
+
+        self.internalIO = {}
+
+    def mapIO(self, inputName:str, outputName:str, node):
+        if x := re.match(r"mem_fle_(\d+)_in_(\d+)", node.name):
+            # fle_num = int(x.group(1))
+            # fle_input = int(x.group(2))
+            fleInput = CLB_IO(inputName,outputName,int(x.group(1)),int(x.group(2)))
+            fleInput.setNextIO( CLB(int(x.group(1)),int(x.group(2))) )
+            self.addIO(fleInput)
 
 class LUTNode(RoutingNode):
     def __init__(self, name="", type="", path="", values:[int]=None):
@@ -305,67 +371,3 @@ class MuxTreeSize14Node(RoutingNode):
                         return 13
                 else:
                     return None
-class Module:
-    def __init__(self, name, type, numBits:int=0):
-        self.name = name
-        self.type = type
-        self.numBits = numBits=0
-        self.nodes = []
-        self.io = {}
-        self.input2output_maps = {}
-
-    def addNode(self,node:RoutingNode):
-        # self.nodes[node.path] = node
-        self.nodes.append(node)
-    
-    def addIO(self, io:IO):
-        self.io[io.name] = io
-    
-    def getIO(self, ioName:str):
-        for io in self.io.keys():
-            if io == ioName:
-                return self.io[io]
-
-    def mapIO(self, inputName:str, outputName:str, node=None):
-        # self.input2output_maps[inputName] = outputName
-        inputIO = self.getIO(inputName)
-        outputIO = self.getIO(outputName)
-        inputIO.setNextIO(outputIO)
-
-    def __str__(self) -> str:
-        nodeStrings = [f'\t({node.__str__()})\n' for node in self.nodes]
-        nodeStrings = "".join(nodeStrings)
-        return f"{self.name}:\n{nodeStrings}"
-
-class CLB_IO(IO):
-    def __init__(self, driverName:str="", ioName:str="",idx=-1, input_idx=-1):
-        super(CLB_IO,self).__init__(driverName,"clb_io")
-        self.idx = idx
-        self.input_idx = input_idx
-        self.driverName = driverName
-        self.ioName = ioName
-
-    def __str__(self) -> str:
-        if self.idx > -1 and self.input_idx > -1:
-            return f"{self.driverName} => {self.ioName} => FLE_{self.idx}.I_{self.input_idx}"
-        else:
-            return f"{self.name} 'wire' (Next: {self.nextIO.name if self.nextIO else None})"
-
-class CLB:
-    def __init__(self, idx=-1, input_idx=-1):
-        self.idx = idx
-        self.input_idx = input_idx
-
-class CLBModule(Module):
-    def __init__(self, name, type, numBits:int=0):
-        super(CLBModule,self).__init__(name,type,numBits)
-
-        self.internalIO = {}
-
-    def mapIO(self, inputName:str, outputName:str, node):
-        if x := re.match(r"mem_fle_(\d+)_in_(\d+)", node.name):
-            # fle_num = int(x.group(1))
-            # fle_input = int(x.group(2))
-            fleInput = CLB_IO(inputName,outputName,int(x.group(1)),int(x.group(2)))
-            fleInput.setNextIO( CLB(int(x.group(1)),int(x.group(2))) )
-            self.addIO(fleInput)
