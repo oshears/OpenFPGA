@@ -1,4 +1,3 @@
-module,type,Input0,Input1,Output
 wire,wire,chany_top_in[8],None,chanx_right_out[9]
 wire,wire,chany_top_in[18],None,chanx_right_out[19]
 wire,wire,chanx_right_in[0],None,chany_top_out[19]

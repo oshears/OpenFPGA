@@ -1,4 +1,3 @@
-name,size,direction
 chany_top_in,20,input
 top_left_grid_right_width_0_height_0_subtile_0__pin_inpad_0_,1,input
 top_left_grid_right_width_0_height_0_subtile_1__pin_inpad_0_,1,input

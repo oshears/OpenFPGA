@@ -1,4 +1,3 @@
-name,size,direction
 chany_bottom_in,20,input
 bottom_right_grid_left_width_0_height_0_subtile_0__pin_inpad_0_,1,input
 bottom_right_grid_left_width_0_height_0_subtile_1__pin_inpad_0_,1,input

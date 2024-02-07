@@ -1,4 +1,3 @@
-name,size,direction
 chanx_right_in,20,input
 right_top_grid_bottom_width_0_height_0_subtile_0__pin_inpad_0_,1,input
 right_top_grid_bottom_width_0_height_0_subtile_1__pin_inpad_0_,1,input

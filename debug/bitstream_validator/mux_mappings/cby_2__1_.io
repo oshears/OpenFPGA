@@ -1,4 +1,3 @@
-name,size,direction
 chany_bottom_in,20,input
 chany_top_in,20,input
 chany_bottom_out,20,output

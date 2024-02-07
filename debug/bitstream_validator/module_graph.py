@@ -215,58 +215,61 @@ def getModules() -> dict[str, Module]:
 def mapMuxes(modules:dict[str,Module]):
 
     # moduleName = "sb_0__0_"
-    moduleName = "cbx_1__2_"
+    # moduleName = "cbx_1__2_"
 
-    # ioCsvFile
-    with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.io","r+") as ioCsvFile:
-        reader = csv.reader(ioCsvFile)
-        next(reader)
-        for io in reader:
-            if int(io[1]) == 1:
-                newIO = IO(io[0],io[2])
-                modules[moduleName].addIO(newIO)
-            else:
-                for i in range(int(io[1])):
-                    newIO = IO(io[0] + f"[{i}]",io[2])
+    for moduleName, module in modules.items():
+        print(module.type)
+
+        # ioCsvFile
+        with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.io","r+") as ioCsvFile:
+            reader = csv.reader(ioCsvFile)
+            next(reader)
+            for io in reader:
+                if int(io[1]) == 1:
+                    newIO = IO(io[0],io[2])
                     modules[moduleName].addIO(newIO)
-            
+                else:
+                    for i in range(int(io[1])):
+                        newIO = IO(io[0] + f"[{i}]",io[2])
+                        modules[moduleName].addIO(newIO)
+                
 
-    with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","r+") as muxCsvFile:
-        reader = csv.reader(muxCsvFile)
-        next(reader)
-        newNodes = []
-        for muxLine in reader:
+        with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","r+") as muxCsvFile:
+            reader = csv.reader(muxCsvFile)
+            # next(reader)
+            newNodes = []
+            for muxLine in reader:
 
-            if "wire" in muxLine[1]:
-                modules[moduleName].mapIO(muxLine[2],muxLine[-1])
+                if "wire" in muxLine[1]:
+                    modules[moduleName].mapIO(muxLine[2],muxLine[-1])
 
-            else:
-                for node in modules[moduleName].nodes:
-                    
-                    muxMemName = "mem" + muxLine[0][3:]
-
-                    if node.name == muxMemName:
+                else:
+                    for node in modules[moduleName].nodes:
                         
-                        newNode = None
+                        muxMemName = "mem" + muxLine[0][3:]
 
-                        if "size2" in muxLine[1]:
-                            newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,muxLine[1],node.path,node.values)
-                        elif "size8" in muxLine[1]:
-                            newNode:MuxTreeSize2Node = MuxTreeSize8Node(node.name,muxLine[1],node.path,node.values)
+                        if node.name == muxMemName:
+                            
+                            newNode = None
 
-                        newNodes.append(newNode)
+                            if "size2" in muxLine[1]:
+                                newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,muxLine[1],node.path,node.values)
+                            elif "size8" in muxLine[1]:
+                                newNode:MuxTreeSize2Node = MuxTreeSize8Node(node.name,muxLine[1],node.path,node.values)
 
-                        muxChoice = newNode.getInputChoice()
+                            newNodes.append(newNode)
 
-                        if muxChoice != None:
-                            modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[-1])
-                        else:
-                            if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
-                                print("Routing node was not defaulted but still returned CONST1")
-                                print(f"\tValues: {node.values}")
+                            muxChoice = newNode.getInputChoice()
+
+                            if muxChoice != None:
+                                modules[moduleName].mapIO(muxLine[2+muxChoice],muxLine[-1])
+                            else:
+                                if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
+                                    print("Routing node was not defaulted but still returned CONST1")
+                                    print(f"\tValues: {node.values}")
 
 
-        modules[moduleName].nodes = newNodes
+            modules[moduleName].nodes = newNodes
 
     
     # for io in modules[moduleName].io.values():
@@ -297,29 +300,61 @@ def parseModules():
 
         verilog_fh = open(f"{resultsPath}/SRC/routing/{moduleName}.v","r+")
         verilogFileLines = verilog_fh.readlines()
+        verilog_fh.close()
 
         # IO file creation
         io_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.io","w+")
 
-        io_fh.write("name,size,direction\n")
+        # io_fh.write("name,size,direction\n")
         for line in verilogFileLines:
             if ("prog_clk" not in line) and ("ccff_head" not in line) and ("ccff_tail" not in line):
                 if x := re.match(r"(input) \[\d:(\d+)\] (.+);",line):
-                    # print(line.strip())
-                    # print(x.groups())
                     io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
                 elif x := re.match(r"(output) \[\d:(\d+)\] (.+);",line):
-                    # print(line.strip())
-                    # print(x.groups())
                     io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
         io_fh.close()
 
 
-        verilog_fh.close()
-
         # Mux file creation
-        # mux_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","w+")
+        mux_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","w+")
 
+        # mux_fh.write("module,type")
+        state = 0
+        muxConfig = []
+        # firstWriteDone = False
+        for line in verilogFileLines:
+
+            if x := re.match(r"\tassign (.*) = (.*);", line):
+                mux_fh.write(f"wire,wire,{x.group(2)},None,{x.group(1)}\n")     
+            
+            if state == 0:
+                if x := re.match(r"\t(mux_.*) (mux_.*) \(", line):
+                    muxConfig.append(x.group(2))
+                    muxConfig.append(x.group(1))
+                    state = 1
+            elif state == 1:
+                if x := re.match(r"\t\t.in\({(.*)}", line):
+                    muxInputs = x.group(1).split(",")
+                    for muxInput in muxInputs:
+                        muxConfig.append(muxInput.strip())
+                    state = 2
+            elif state == 2:
+                if x := re.match(r"\t\t.out\((.*)\)\);", line):
+                    muxConfig.append(x.group(1))
+
+                    # if not firstWriteDone:
+                    #     mux_fh.write("module,type,")
+                    #     mux_fh.write(",".join([f"input{i}" for i in range(len(muxConfig) - 3)]))
+                    #     firstWriteDone = True
+                        
+
+                    mux_fh.write(",".join(muxConfig) + "\n")
+
+                    muxConfig = []
+                    state = 0
+
+
+        mux_fh.close()
 
 
 

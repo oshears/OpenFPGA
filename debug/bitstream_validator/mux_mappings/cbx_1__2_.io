@@ -1,4 +1,3 @@
-name,size,direction
 chanx_left_in,20,input
 chanx_right_in,20,input
 chanx_left_out,20,output
