@@ -34,6 +34,9 @@ class Connection:
         return self.wireName
         
 
+## This method takes in a list of the modules parsed from the bitstream and maps the 
+## connections between each of the modules in the fpga_top.v file
+## the result is a modified modules dictionary with each of the IO being connected (after calling makeLinks())
 def parseTop(modules):
     wires = {}
 
@@ -72,6 +75,8 @@ def parseTop(modules):
                 currModuleType = x.group(1)
                 currModule = x.group(2)
             elif x := re.match(r"\s+.(\S+)\((\S+)\),", line):
+                # TODO: Make the grid_io connections between FPGA inputs and outputs
+                # TODO: Make the clb connections
                 if "grid_io" not in currModule and "clb" not in currModule: # DEBUG: Remove Later
                     modulePort = x.group(1)
                     
