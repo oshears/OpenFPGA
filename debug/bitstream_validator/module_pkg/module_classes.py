@@ -18,7 +18,15 @@ class RoutingNode:
 
     def __str__(self) -> str:
         return f"{self.path} : {self.values.__str__()}"
-    
+
+class GPIO_PAD(RoutingNode):
+    def __init__(self, name="", type="", path="", numBits:int=1, value:int=0):
+        super(GPIO_PAD,self).__init__(name,type,path,numBits,[value])
+        self.value = value
+
+    def getSetting(self):
+        return "out_pad" if self.value else "in_pad"
+
 class IO:
     def __init__(self, name:str="", module:str="", direction:str="input"):
         self.name = name

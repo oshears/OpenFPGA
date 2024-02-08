@@ -100,9 +100,9 @@ def parseTop(modules):
                             raise Exception()
                         wires[wireName].addConnection(currModule,moduleIO)
 
-    for wire in wires.values():
-        wire.makeLinks()
-        print(wire)
+    # for wire in wires.values():
+    #     wire.makeLinks()
+    #     print(wire)
 
     return wires
 

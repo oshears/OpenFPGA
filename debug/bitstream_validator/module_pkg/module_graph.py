@@ -98,6 +98,8 @@ def parseModules():
                     io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
                 elif x := re.match(r"(output) \[\d:(\d+)\] (.+);",line):
                     io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
+                elif x := re.match(r"(inout) \[\d:(\d+)\] (.+);",line):
+                    io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
         io_fh.close()
 
     ## For Switch Box and CB Modules
@@ -216,27 +218,29 @@ def parseModules():
                     muxConfig = []
                     state = 0
 
-
         mux_fh.close()
     
+
+
+
+
+
+
 
 
 
 ### get muxes and io, and map them to the modules
 def mapMuxes(modules:dict[str,Module]):
 
-    # moduleName = "sb_0__0_"
-    # moduleName = "cbx_1__2_"
-
     module_mappings = {
-        # "grid_io_top_1__3_":"grid_io_top",
-        # "grid_io_top_2__3_":"grid_io_top",
-        # "grid_io_right_3__2_":"grid_io_right",
-        # "grid_io_right_3__1_":"grid_io_right",
-        # "grid_io_bottom_2__0_":"grid_io_bottom",
-        # "grid_io_bottom_1__0_":"grid_io_bottom",
-        # "grid_io_left_0__1_":"grid_io_left",
-        # "grid_io_left_0__2_":"grid_io_left",
+        "grid_io_top_1__3_":"grid_io_top",
+        "grid_io_top_2__3_":"grid_io_top",
+        "grid_io_right_3__2_":"grid_io_right",
+        "grid_io_right_3__1_":"grid_io_right",
+        "grid_io_bottom_2__0_":"grid_io_bottom",
+        "grid_io_bottom_1__0_":"grid_io_bottom",
+        "grid_io_left_0__1_":"grid_io_left",
+        "grid_io_left_0__2_":"grid_io_left",
         "grid_clb_1__1_":"logical_tile_clb_mode_clb_",
         "grid_clb_1__2_":"logical_tile_clb_mode_clb_",
         "grid_clb_2__1_":"logical_tile_clb_mode_clb_",
@@ -266,30 +270,36 @@ def mapMuxes(modules:dict[str,Module]):
 
     ## iterate through each module at the top level
     for moduleName, module in modules.items():
-        # print(module.type)
 
+        # if the current module is in the list of module names to performing mapping on
         if moduleName in module_mappings.keys():
 
-            # ioCsvFile
+            # open the module's io csv file and create a new IO instance to place in that module
+            # TODO: maybe it'd be a good idea to add these IO to the mux classes (if I ever get around to making them)
             with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{module_mappings[moduleName]}.io","r+") as ioCsvFile:
                 reader = csv.reader(ioCsvFile)
-                # next(reader)
                 for io in reader:
+                    # if IO has only one bit, add it and indicate its direction
                     if int(io[1]) == 1:
                         newIO = IO(io[0], moduleName, io[2])
                         modules[moduleName].addIO(newIO)
                     else:
+                        # unpacked any IO that are have more than one bit
                         for i in range(int(io[1])):
                             newIO = IO(io[0] + f"[{i}]", moduleName, io[2])
                             modules[moduleName].addIO(newIO)
                     
-            # muxCsvFile
+            # now open the multiplex info file for the current module
             with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{module_mappings[moduleName]}.mux","r+") as muxCsvFile:
                 reader = csv.reader(muxCsvFile)
-                # next(reader)
-                newNodes = []
-                for muxLine in reader:
 
+                # we will make a new Node for each multiplexer to replace the generic original nodes
+                newNodes = []
+
+                # for each line in the muxCsvFile for the current module
+                for muxLine in reader:
+                    
+                    # correct the formatting of the inputs to the mux if any of them have multiple bits (e.g., someWire[0:19])
                     fixedMuxLine = []
                     for entry in muxLine: 
                         if x := re.match(r"(.+)\[(\d+):(\d+)\]",entry):
@@ -298,18 +308,42 @@ def mapMuxes(modules:dict[str,Module]):
                         else:
                             fixedMuxLine.append(entry)
 
+                    # if the current entry is just a wire, then directly map the IOs from input to output
                     if "wire" in fixedMuxLine[1]:
                         modules[moduleName].mapIO(fixedMuxLine[2],fixedMuxLine[-1])
 
+                    # if the current entry is a GPIO pad
+                    elif "logical_tile_io_mode_io" in fixedMuxLine[1]:
+                        print(moduleName)
+                        for node in modules[moduleName].nodes:
+                            # print(f"\t{node.path.split('/')[1]}")
+                            nodeName = node.path.split("/")[1]
+                            if nodeName == fixedMuxLine[0]:
+                                newNode = GPIO_PAD(nodeName,fixedMuxLine[1],node.path,node.values[0])
+                                newNodes.append(newNode)
+
+                                gpioSetting = newNode.getSetting()
+
+                                if gpioSetting:
+                                    modules[moduleName].mapIO(fixedMuxLine[2],fixedMuxLine[4],newNode)
+                                else:
+                                    modules[moduleName].mapIO(fixedMuxLine[3],fixedMuxLine[2],newNode)
+                    
+                    # else it is a regular multiplexer
                     else:
+                        # we must search through all of the existing generic nodes in the current top level module
+                        # for the node we have to replace
                         for node in modules[moduleName].nodes:
                             
                             muxMemName = "mem" + fixedMuxLine[0][3:]
 
+                            # if we have found the node that needs to be replaced, we can start to replace it here 
                             if node.name == muxMemName:
                                 
                                 newNode = None
 
+                                # determine what type of node to replace it with
+                                # each of these nodes has a specific way of determining which input to send to the output
                                 if "size2" in fixedMuxLine[1]:
                                     newNode:MuxTreeSize2Node = MuxTreeSize2Node(node.name,fixedMuxLine[1],node.path,node.values)
                                 elif "size3" in fixedMuxLine[1]:
@@ -332,9 +366,11 @@ def mapMuxes(modules:dict[str,Module]):
 
                                 newNodes.append(newNode)
 
+                                # get the index of the input the mux is configured to select/propagate
                                 muxChoice = newNode.getInputChoice()
 
                                 if muxChoice != None:
+                                    # map the input that the mux is configured to select to...
                                     modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1],newNode)
                                 else:
                                     if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
@@ -343,11 +379,6 @@ def mapMuxes(modules:dict[str,Module]):
 
 
                 modules[moduleName].nodes = newNodes
-
-        
-        # for io in modules[moduleName].io.values():
-        #     if io.nextIO != None:
-        #         print(io)
 
     return modules
 
