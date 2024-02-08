@@ -314,7 +314,7 @@ def mapMuxes(modules:dict[str,Module]):
 
                     # if the current entry is a GPIO pad
                     elif "logical_tile_io_mode_io" in fixedMuxLine[1]:
-                        print(moduleName)
+                        # print(moduleName)
                         for node in modules[moduleName].nodes:
                             # print(f"\t{node.path.split('/')[1]}")
                             nodeName = node.path.split("/")[1]
@@ -324,7 +324,7 @@ def mapMuxes(modules:dict[str,Module]):
 
                                 gpioSetting = newNode.getSetting()
 
-                                if gpioSetting:
+                                if gpioSetting == 'in_pad':
                                     modules[moduleName].mapIO(fixedMuxLine[2],fixedMuxLine[4],newNode)
                                 else:
                                     modules[moduleName].mapIO(fixedMuxLine[3],fixedMuxLine[2],newNode)
