@@ -69,7 +69,7 @@ def parseModules():
                     "cbx_1__2_",
                     "cby_2__1_",
                     "sb_0__0_",
-                    "logical_tile_clb_mode_clb_",
+                    "grid_clb",
                     "grid_io_bottom",
                     "grid_io_top",
                     "grid_io_right",
@@ -138,7 +138,11 @@ def parseModules():
         verilog_fh.close()
 
         # create a mux file for the current module
-        mux_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","w+")
+        mux_fh = None
+        if "clb" in moduleName:
+            mux_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/grid_clb.mux","w+")
+        else:
+            mux_fh = open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{moduleName}.mux","w+")
 
         # use a state variable to keep track of what has been processed so far for a given mux
         state = 0
@@ -241,10 +245,10 @@ def mapMuxes(modules:dict[str,Module]):
         "grid_io_bottom_1__0_":"grid_io_bottom",
         "grid_io_left_0__1_":"grid_io_left",
         "grid_io_left_0__2_":"grid_io_left",
-        "grid_clb_1__1_":"logical_tile_clb_mode_clb_",
-        "grid_clb_1__2_":"logical_tile_clb_mode_clb_",
-        "grid_clb_2__1_":"logical_tile_clb_mode_clb_",
-        "grid_clb_2__2_":"logical_tile_clb_mode_clb_",
+        "grid_clb_1__1_":"grid_clb",
+        "grid_clb_1__2_":"grid_clb",
+        "grid_clb_2__1_":"grid_clb",
+        "grid_clb_2__2_":"grid_clb",
         "sb_0__0_":"sb_0__0_",
         "sb_0__1_":"sb_0__1_",
         "sb_0__2_":"sb_0__2_",
@@ -310,7 +314,7 @@ def mapMuxes(modules:dict[str,Module]):
 
                     # if the current entry is just a wire, then directly map the IOs from input to output
                     if "wire" in fixedMuxLine[1]:
-                        modules[moduleName].mapIO(fixedMuxLine[2],fixedMuxLine[-1])
+                        modules[moduleName].mapIO(fixedMuxLine[2], fixedMuxLine[-1], directConnection=True)
 
                     # if the current entry is a GPIO pad
                     elif "logical_tile_io_mode_io" in fixedMuxLine[1]:
@@ -370,8 +374,74 @@ def mapMuxes(modules:dict[str,Module]):
                                 muxChoice = newNode.getInputChoice()
 
                                 if muxChoice != None:
-                                    # map the input that the mux is configured to select to...
-                                    modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1],newNode)
+
+                                    # if the current module is a CLB, we have to do a translation in order to get the proper io name
+                                    if "clb" in moduleName:
+                                        clb_io_mappings = {
+                                            "clb_I[0]":"top_width_0_height_0_subtile_0__pin_I_0_",
+                                            "clb_I[1]":"right_width_0_height_0_subtile_0__pin_I_1_",
+                                            "clb_I[2]":"bottom_width_0_height_0_subtile_0__pin_I_2_",
+                                            "clb_I[3]":"left_width_0_height_0_subtile_0__pin_I_3_",
+                                            "clb_I[4]":"top_width_0_height_0_subtile_0__pin_I_4_",
+                                            "clb_I[5]":"right_width_0_height_0_subtile_0__pin_I_5_",
+                                            "clb_I[6]":"bottom_width_0_height_0_subtile_0__pin_I_6_",
+                                            "clb_I[7]":"left_width_0_height_0_subtile_0__pin_I_7_",
+                                            "clb_I[8]":"top_width_0_height_0_subtile_0__pin_I_8_",
+                                            "clb_I[9]":"right_width_0_height_0_subtile_0__pin_I_9_",
+                                            "clb_O[0]":"bottom_width_0_height_0_subtile_0__pin_O_0_",
+                                            "clb_O[1]":"left_width_0_height_0_subtile_0__pin_O_1_",
+                                            "clb_O[2]":"top_width_0_height_0_subtile_0__pin_O_2_",
+                                            "clb_O[3]":"right_width_0_height_0_subtile_0__pin_O_3_",
+                                            "logical_tile_clb_mode_default__fle_0_fle_out":"logical_tile_clb_mode_default__fle_0_fle_out",
+                                            "logical_tile_clb_mode_default__fle_1_fle_out":"logical_tile_clb_mode_default__fle_1_fle_out",
+                                            "logical_tile_clb_mode_default__fle_2_fle_out":"logical_tile_clb_mode_default__fle_2_fle_out",
+                                            "logical_tile_clb_mode_default__fle_3_fle_out":"logical_tile_clb_mode_default__fle_3_fle_out"
+                                        }
+                                        # clb_fle_mappings = {
+                                        #     "logical_tile_clb_mode_default__fle_0_fle_out":"clb_0[0]",
+                                        #     "logical_tile_clb_mode_default__fle_1_fle_out":"clb_0[1]",
+                                        #     "logical_tile_clb_mode_default__fle_2_fle_out":"clb_0[2]",
+                                        #     "logical_tile_clb_mode_default__fle_3_fle_out":"clb_0[3]",
+                                        # }
+                                        clb_fle_out_mappings = {
+                                            "mux_tree_size14_0_out":"bottom_width_0_height_0_subtile_0__pin_O_0_",
+                                            "mux_tree_size14_1_out":"bottom_width_0_height_0_subtile_0__pin_O_0_",
+                                            "mux_tree_size14_2_out":"bottom_width_0_height_0_subtile_0__pin_O_0_",
+                                            "mux_tree_size14_3_out":"bottom_width_0_height_0_subtile_0__pin_O_0_",
+                                            "mux_tree_size14_4_out":"left_width_0_height_0_subtile_0__pin_O_1_",
+                                            "mux_tree_size14_5_out":"left_width_0_height_0_subtile_0__pin_O_1_",
+                                            "mux_tree_size14_6_out":"left_width_0_height_0_subtile_0__pin_O_1_",
+                                            "mux_tree_size14_7_out":"left_width_0_height_0_subtile_0__pin_O_1_",
+                                            "mux_tree_size14_8_out":"top_width_0_height_0_subtile_0__pin_O_2_",
+                                            "mux_tree_size14_9_out":"top_width_0_height_0_subtile_0__pin_O_2_",
+                                            "mux_tree_size14_10_out":"top_width_0_height_0_subtile_0__pin_O_2_",
+                                            "mux_tree_size14_11_out":"top_width_0_height_0_subtile_0__pin_O_2_",
+                                            "mux_tree_size14_12_out":"right_width_0_height_0_subtile_0__pin_O_3_",
+                                            "mux_tree_size14_13_out":"right_width_0_height_0_subtile_0__pin_O_3_",
+                                            "mux_tree_size14_14_out":"right_width_0_height_0_subtile_0__pin_O_3_",
+                                            "mux_tree_size14_15_out":"right_width_0_height_0_subtile_0__pin_O_3_",
+                                        }
+                                        cross_fle_inputs = [
+                                            "logical_tile_clb_mode_default__fle_0_fle_out",
+                                            "logical_tile_clb_mode_default__fle_1_fle_out",
+                                            "logical_tile_clb_mode_default__fle_2_fle_out",
+                                            "logical_tile_clb_mode_default__fle_3_fle_out"
+                                        ]
+
+                                        # map the input that the mux is configured to select to...
+                                        translatedInput = clb_io_mappings[fixedMuxLine[2+muxChoice]]
+                                        # translatedOutput = clb_io_mappings[fixedMuxLine[-1]]
+                                        translatedOutput = clb_fle_out_mappings[fixedMuxLine[-1]]
+                                        if "logical_tile_clb_mode_default__fle_" in translatedInput:
+                                            ## Temporary, map internal IO only
+                                            modules[moduleName].mapInternalIO(translatedInput,translatedOutput,newNode)
+                                        else:
+                                            modules[moduleName].mapIO(translatedInput,translatedOutput,newNode)
+                                    
+                                    # all other non-CLB cases
+                                    else:
+                                        # map the input that the mux is configured to select to...
+                                        modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1],newNode)
                                 else:
                                     if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
                                         print("Routing node was not defaulted but still returned CONST1")

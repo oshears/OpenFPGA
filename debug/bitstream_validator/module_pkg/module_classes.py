@@ -30,15 +30,49 @@ class GPIO_PAD(RoutingNode):
 class IO:
     def __init__(self, name:str="", module:str="", direction:str="input"):
         self.name = name
+
+        if direction != "input" and direction != "output" and direction != "inout":
+            raise Exception()
+        
         self.direction = direction
-        self.nextIO = None
+        self.nextIO = []
+        self.prevIO = []
         self.moduleName = module
+        self.nextioIsDirect = []
+        self.previoIsDirect = []
     
     def __str__(self) -> str:
-        return f"{self.moduleName}.{self.name} {'output' if self.direction else 'input'} (Next: {f'{self.nextIO.moduleName}.{self.nextIO.name}' if self.nextIO else None})"
+        outputString = ""
+        outputString += f"{self.moduleName}.{self.name} " 
+        outputString += f"{self.direction} " 
+        # outputString += f"{'DIRECT_WIRE' if self.connectsDirectlyToNext else ''} " 
+
+        if len(self.nextIO) == 0:
+            outputString += "(Next: None)"
+        else:
+            outputString += "(Next: "
+            for ioIndex in range(len(self.nextIO)):
+                # outputString += f"(Next: {f'{self.nextIO.moduleName}.{self.nextIO.name}' if self.nextIO else None})" 
+                isDirectConnectionStr = "DIRECT_WIRE " if self.nextioIsDirect[ioIndex] else ""
+                outputString += f"{isDirectConnectionStr}{f'{self.nextIO[ioIndex].moduleName}.{self.nextIO[ioIndex].name}'}, " 
+            outputString += ")"
+
+        return outputString
     
-    def setNextIO(self,nextIO):
-        self.nextIO = nextIO
+    def addNextIO(self, nextIO, connectsDirectlyToNext:bool=False):
+        self.nextIO.append(nextIO)
+        self.nextioIsDirect.append(connectsDirectlyToNext)
+        self.nextIO[-1].addPrevIO(self, connectsDirectlyToNext)
+
+        if self.direction == "inout":
+            self.direction = "input"
+    
+    def addPrevIO(self, prevIO, connectsdirectlyToPrev):
+        self.prevIO.append(prevIO)
+        self.previoIsDirect.append(connectsdirectlyToPrev)
+
+        if self.direction == "inout":
+            self.direction = "output"
 
 class Module:
     def __init__(self, name, type, numBits:int=0):
@@ -61,11 +95,11 @@ class Module:
             if io == ioName:
                 return self.io[io]
 
-    def mapIO(self, inputName:str, outputName:str, node=None):
+    def mapIO(self, inputName:str, outputName:str, node=None, directConnection=False):
         # self.input2output_maps[inputName] = outputName
         inputIO = self.getIO(inputName)
         outputIO = self.getIO(outputName)
-        inputIO.setNextIO(outputIO)
+        inputIO.addNextIO(outputIO, directConnection)
 
     def __str__(self) -> str:
         nodeStrings = [f'\t({node.__str__()})\n' for node in self.nodes]
@@ -73,18 +107,20 @@ class Module:
         return f"{self.name}:\n{nodeStrings}"
 
 class CLB_IO(IO):
-    def __init__(self, driverName:str="", module:str="", ioName:str="",idx=-1, input_idx=-1):
-        super(CLB_IO,self).__init__(driverName,module,"clb_io")
+    def __init__(self, driverName:str="", module:str="", ioName:str="", idx=-1, input_idx=-1):
+        # super(CLB_IO,self).__init__(driverName,module,"clb_io")
+        super(CLB_IO,self).__init__(driverName,module,"input")
         self.idx = idx
         self.input_idx = input_idx
         self.driverName = driverName
         self.ioName = ioName
+        self.internal = True
 
-    def __str__(self) -> str:
-        if self.idx > -1 and self.input_idx > -1:
-            return f"{self.driverName} => {self.ioName} => FLE_{self.idx}.I_{self.input_idx}"
-        else:
-            return f"{self.name} 'wire' (Next: {self.nextIO.name if self.nextIO else None})"
+    # def __str__(self) -> str:
+    #     if self.idx > -1 and self.input_idx > -1:
+    #         return f"{self.driverName} => {self.ioName} => FLE_{self.idx}.I_{self.input_idx}"
+    #     else:
+    #         return f"{self.name} 'wire' (Next: {self.nextIO.name if self.nextIO else None})"
 
 class CLB:
     def __init__(self, idx=-1, input_idx=-1):
@@ -95,15 +131,17 @@ class CLBModule(Module):
     def __init__(self, name, type, numBits:int=0):
         super(CLBModule,self).__init__(name,type,numBits)
 
-        self.internalIO = {}
+        # self.internalIO = {}
 
-    def mapIO(self, inputName:str, outputName:str, node):
-        if x := re.match(r"mem_fle_(\d+)_in_(\d+)", node.name):
-            # fle_num = int(x.group(1))
-            # fle_input = int(x.group(2))
-            fleInput = CLB_IO(inputName,self.name,outputName,int(x.group(1)),int(x.group(2)))
-            fleInput.setNextIO( CLB(int(x.group(1)),int(x.group(2))) )
-            self.addIO(fleInput)
+    def mapInternalIO(self, inputName:str, outputName:str, node):
+        # if x := re.match(r"mem_fle_(\d+)_in_(\d+)", node.name):
+        # fle_num = int(x.group(1))
+        # fle_input = int(x.group(2))
+        # fleInput = CLB_IO(inputName, self.name, outputName, int(x.group(1)), int(x.group(2)))
+        fleInput = CLB_IO(inputName, self.name, outputName)
+        # fleInput.setNextIO( CLB(int(x.group(1)),int(x.group(2))) )
+        fleInput.addNextIO(self.getIO(outputName))
+        self.addIO(fleInput)
 
 class LUTNode(RoutingNode):
     def __init__(self, name="", type="", path="", values:[int]=None):

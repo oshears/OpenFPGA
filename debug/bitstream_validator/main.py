@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     # Use information from the bitstreams to determine the mux configurations, and thus the internal routes being used
     mapMuxes(modules)
-    
+
     # Connect the modules per the information from fpga_top.v
     parseTop(modules)
 
