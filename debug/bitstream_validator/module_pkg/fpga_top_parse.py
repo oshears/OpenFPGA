@@ -41,13 +41,14 @@ def parseTop(modules):
     wires = {}
 
     top_fh = open(f"{resultsPath}/SRC/fpga_top.v")
-    # for line
     fpga_top_lines = top_fh.readlines()
 
 
-    ## get wires
+    ## loop though each line of the fpga_top.v file
     for line in fpga_top_lines:
+        # skip lines that have "tail"
         if "tail" not in line:
+            # if a wire definition is found, then get its size and add it to the dict of wires  
             if x := re.match(r"wire\s+\[\d+:(\d+)\]\s+(\S+);", line):
                 size = int(x.group(1))+1
                 wireName = x.group(2)
@@ -60,49 +61,87 @@ def parseTop(modules):
                 else:
                     wires[wireName] = Connection(wireName)
                 
-                # if size > 0:
-                #     wires.append(f"{wireName}[0:{size}]")
-                # else:
-                #     wires.append(wireName)
-    
     ## get input mappings
     currModule = None
     currModuleType = None
+
+    # for each line in fpga_top.v
     for line in fpga_top_lines:
+
+        # ignore all of these connections since they aren't relevant to the bitstream
         parseLine = ("prog_clk" not in line) and ("ccff_head" not in line) and ("ccff_tail" not in line) and ("set" not in line) and ("reset" not in line) and ("clk" not in line) and ("gfpga_pad_GPIO_PAD" not in line)
+        
+        # if we have a valid line to parse
         if parseLine:
+
+            # if the line is a module definition line
             if x := re.match(r"\s+(\S+) (\S+) \(", line):
+
+                # save the module name and type
                 currModuleType = x.group(1)
                 currModule = x.group(2)
+            
+            # if the current line is a module port line
             elif x := re.match(r"\s+.(\S+)\((\S+)\),", line):
-                # TODO: Make the grid_io connections between FPGA inputs and outputs
+
                 # TODO: Make the clb connections
-                if "grid_io" not in currModule and "clb" not in currModule: # DEBUG: Remove Later
+                if "clb" not in currModule: # DEBUG: Remove Later
+
+                    # identify the current module port detected
                     modulePort = x.group(1)
                     
+                    # identify the name of the wire that the port connects to
                     wireName = x.group(2)
                     wireSize = 1
+
+                    # check if the wire is a multi-bit wire
                     if y := re.match(r"(\S+)\[\d+:(\d+)\]", wireName):
+
+                        # if it is multi-bit, then get the wire name and size
                         wireName = y.group(1)
                         wireSize = int(y.group(2)) + 1
 
-                        connectionList = []
+                        # prepare to add sveral IO/wire associations to the wires dictionary
+                        # connectionList = []
+
+                        # for each wire in the multi-bit wire
                         for i in range(wireSize):
+
+                            # get the IO for the current module
                             moduleIO = modules[currModule].getIO(f"{modulePort}[{i}]")
+
+                            # ensure the IO was found
                             if moduleIO == None or currModule == None:
                                 raise Exception()
-                            connectionList.append(moduleIO)
-                            wires[f"{wireName}[{i}]"].addConnection(currModule,moduleIO)
 
+                            
+                            # assuming it was found correctly,
+                            # add a connection between the IO for the current module and the corresponding wire
+                            wires[f"{wireName}[{i}]"].addConnection(currModule,moduleIO)
+                    
+                    # if it's not a multi-bit wire...
                     else:
+
+                        # get the IO for the current module
                         moduleIO = modules[currModule].getIO(modulePort)
+
+                        # ensure the IO was found
                         if moduleIO == None or currModule == None:
                             raise Exception()
+                        
+                        # assuming it was found correctly,
+                        # add a connection between the IO for the current module and the corresponding wire
                         wires[wireName].addConnection(currModule,moduleIO)
 
-    # for wire in wires.values():
-    #     wire.makeLinks()
-    #     print(wire)
+    
+    for wireName, wire in wires.items():
+        if len(wire.connections) > 1:
+            # TODO: this might not be working in the best way, need to fix
+            if wire.connections[0].nextIO == None and wire.connections[1].nextIO != None:
+                wire.connections[0].setNextIO(wire.connections[1])
+            elif wire.connections[1].nextIO == None and wire.connections[0].nextIO != None:
+                wire.connections[1].setNextIO(wire.connections[0])
+
 
     return wires
 
