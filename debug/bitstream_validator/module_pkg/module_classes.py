@@ -67,12 +67,18 @@ class IO:
         if self.direction == "inout":
             self.direction = "input"
     
-    def addPrevIO(self, prevIO, connectsdirectlyToPrev):
+    def addPrevIO(self, prevIO, connectsdirectlyToPrev:bool=False):
         self.prevIO.append(prevIO)
         self.previoIsDirect.append(connectsdirectlyToPrev)
 
         if self.direction == "inout":
             self.direction = "output"
+    
+    def hasNextIO(self):
+        return len(self.nextIO) > 0
+    
+    def hasPrevIO(self):
+        return len(self.prevIO) > 0
 
 class Module:
     def __init__(self, name, type, numBits:int=0):

@@ -42,7 +42,7 @@ class Connection:
             
             # now assign the other wires as the next of this driver
             for otherIO in others:
-                driver.addNextIO(otherIO)
+                driver.addNextIO(otherIO,True)
 
     
     def __str__(self):
