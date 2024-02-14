@@ -9,6 +9,7 @@ resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/random_de
 bitstreamFile = f"{resultsPath}/fabric_independent_bitstream.xml"
 # bitstreamFile = f"{baseDir}/debug/bitstream_validator/fabric_independent_bitstream_1.xml"
 # bitstreamFile = f"{baseDir}/debug/bitstream_validator/fabric_independent_bitstream_2.xml"
+# bitstreamFile = f"{baseDir}/debug/bitstream_validator/bitstreams/one_in_one_clb.xml"
 
 
 moduleFile = f"{resultsPath}/SRC/routing/sb_0__2_.v"

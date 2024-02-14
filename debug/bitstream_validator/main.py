@@ -135,9 +135,9 @@ def printDeadEnds(modules:Union[str, Module]):
             
             # skip IO Pads
             # reportHasSink(port,fh)
-            if mux.hasConfigBits() and mux.outputPort != None and (not hasSink(mux.outputPort)):
+            if mux.hasConfigBits() and mux.muxOutput != None and (not hasSink(mux.muxOutput)):
                 fh.write(f"{mux}\n")
-                printMuxPaths(mux.outputPort, fh)
+                printMuxPaths(mux.muxOutput, fh)
             
             
     fh.close();
