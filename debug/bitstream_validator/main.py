@@ -3,8 +3,9 @@ from module_pkg.fpga_top_parse import *
 from module_pkg.map_muxes import *
 from module_pkg.parse_verilog_modules import *
 from module_pkg.get_bitstream_modules import *
+from typing import List, Union
 
-def displayRoutes(modules:[str, Module]):
+def displayRoutes(modules:Union[str, Module]):
     fh = open(f"{baseDir}/debug/bitstream_validator/outRoutes.txt","w+")
     for modName, mod in modules.items():
         fh.write(f"{modName}\n")
@@ -13,7 +14,7 @@ def displayRoutes(modules:[str, Module]):
                 fh.write(f"\t{io}\n")
     fh.close()
 
-def getPrevPorts(root:IO,outFile,level=0) -> [IO]:
+def getPrevPorts(root:IO,outFile,level=0) -> List[IO]:
 
     # print(level*'\t' + root.__str__()) 
     outFile.write(level*'\t' + root.__str__() + '\n')
@@ -30,7 +31,7 @@ def getPrevPorts(root:IO,outFile,level=0) -> [IO]:
     
     return prevPorts
 
-def tracePaths(modules:[str, Module]):
+def tracePaths(modules:Union[str, Module]):
     
     startPorts = []
 
@@ -84,23 +85,23 @@ def tracePaths(modules:[str, Module]):
 #     else:
 #         return False
 
-def reportHasSink(root:IO,outFile,pathLength=0):
+# def reportHasSink(root:IO,outFile,pathLength=0):
     
-    for nextIO in root.nextIO:
-        reportHasSink(nextIO, outFile, pathLength + 1)
+#     for nextIO in root.nextIO:
+#         reportHasSink(nextIO, outFile, pathLength + 1)
 
-    # if not root.hasNextIO() and ("GPIO_PAD" not in root.name) and (root.direction == "output"):
+#     # if not root.hasNextIO() and ("GPIO_PAD" not in root.name) and (root.direction == "output"):
 
-    # if the port does not have a next and is not a GPIO_PAD, it might be a dead end
-    if not root.hasNextIO() and ("GPIO_PAD" not in root.name):
-        # check to see if it had something leading to it, otherwise we disqualify it
-        # if root.hasPrevIO():
-        # if it had something leading to it, make sure it wasn't just a wire connections (i.e., it was intentionally routed)
-        # if not root.previoIsDirect[0]:
+#     # if the port does not have a next and is not a GPIO_PAD, it might be a dead end
+#     if not root.hasNextIO() and ("GPIO_PAD" not in root.name):
+#         # check to see if it had something leading to it, otherwise we disqualify it
+#         # if root.hasPrevIO():
+#         # if it had something leading to it, make sure it wasn't just a wire connections (i.e., it was intentionally routed)
+#         # if not root.previoIsDirect[0]:
         
-        if "grid_clb" not in root.prevIO[0].moduleName: # TODO: DEBUG: Remove when finished implementing CLB stuff
-            if hasSinglePathPreceedingMux(root, outFile):
-                outFile.write(f"L={pathLength}, {root.prevIO[0]}\n")
+#         if "grid_clb" not in root.prevIO[0].moduleName: # TODO: DEBUG: Remove when finished implementing CLB stuff
+#             if hasSinglePathPreceedingMux(root, outFile):
+#                 outFile.write(f"L={pathLength}, {root.prevIO[0]}\n")
 
 def hasSink(root:IO):
     
@@ -118,7 +119,7 @@ def printMuxPaths(root:IO, outFile, level=1):
     for nextIO in root.nextIO:
         printMuxPaths(nextIO, outFile, level + 1)
             
-def printDeadEnds(modules:[str, Module]):
+def printDeadEnds(modules:Union[str, Module]):
 
     fh = open(f"{baseDir}/debug/bitstream_validator/deadEnds.txt","w+")
 

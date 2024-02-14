@@ -1,31 +1,32 @@
+from typing import List, Union
 from . import *
 # from __init__ import *
 
 ## Classes
 class RoutingNode:
-    def __init__(self, name="", type="", path="", numBits:int=1, values:[int]=None):
+    def __init__(self, name="", type="", path="", numBits:int=1, values:List[int]=None):
         self.name = name
         self.type = type
         self.path = path 
         self.selectedInput = None
-        self.outputPort = None
+        self.muxOutput = None
 
         if values:
             self.values = values   
         else:
             self.values = numBits * [0]
 
-    def setValues(self,values:[int]):
+    def setValues(self, values:List[int]):
         self.values = values
 
     def __str__(self) -> str:
         return f"{self.path} : {self.values.__str__()}"
     
-    def setInput(self, inputPort):
-        self.selectedInput = inputPort
+    def setSelectedInput(self, selectedInput):
+        self.selectedInput = selectedInput
     
-    def setOutput(self, outputPort):
-        self.outputPort = outputPort
+    def setMuxOutput(self, muxOutput):
+        self.muxOutput = muxOutput
         
     def hasConfigBits(self):
         return 1 in self.values
@@ -98,11 +99,10 @@ class Module:
         self.type = type
         self.numBits = numBits=0
         self.nodes = []
-        self.io:[str, IO] = {}
+        self.io:Union[str, IO] = {}
         self.input2output_maps = {}
 
     def addNode(self, node:RoutingNode):
-        # self.nodes[node.path] = node
         self.nodes.append(node)
     
     def addIO(self, io:IO):
@@ -112,9 +112,11 @@ class Module:
         for io in self.io.keys():
             if io == ioName:
                 return self.io[io]
+        raise Exception(f"IO {ioName} does not exist in module: {self.name}")
 
-    def mapIO(self, inputName:str, outputName:str, node=None, directConnection=False):
-        # self.input2output_maps[inputName] = outputName
+    def mapIO(self, inputName:str, outputName:str, directConnection=False):
+        if inputName == outputName:
+            raise Exception("Cannot map and IO back to itself!")
         inputIO = self.getIO(inputName)
         outputIO = self.getIO(outputName)
         inputIO.addNextIO(outputIO, directConnection)
@@ -125,41 +127,13 @@ class Module:
         return f"{self.name}:\n{nodeStrings}"
 
 class CLB_IO(IO):
-    def __init__(self, driverName:str="", module:str="", ioName:str="", idx=-1, input_idx=-1):
-        # super(CLB_IO,self).__init__(driverName,module,"clb_io")
-        super(CLB_IO,self).__init__(driverName,module,"input")
-        self.idx = idx
-        self.input_idx = input_idx
-        self.driverName = driverName
-        self.ioName = ioName
+    def __init__(self, name:str="", module:str="",):
+        super(CLB_IO,self).__init__(name, module,"input")
         self.internal = True
-
-    # def __str__(self) -> str:
-    #     if self.idx > -1 and self.input_idx > -1:
-    #         return f"{self.driverName} => {self.ioName} => FLE_{self.idx}.I_{self.input_idx}"
-    #     else:
-    #         return f"{self.name} 'wire' (Next: {self.nextIO.name if self.nextIO else None})"
-
-class CLB:
-    def __init__(self, idx=-1, input_idx=-1):
-        self.idx = idx
-        self.input_idx = input_idx
 
 class CLBModule(Module):
     def __init__(self, name, type, numBits:int=0):
         super(CLBModule,self).__init__(name,type,numBits)
-
-        # self.internalIO = {}
-
-    def mapInternalIO(self, inputName:str, outputName:str, node):
-        # if x := re.match(r"mem_fle_(\d+)_in_(\d+)", node.name):
-        # fle_num = int(x.group(1))
-        # fle_input = int(x.group(2))
-        # fleInput = CLB_IO(inputName, self.name, outputName, int(x.group(1)), int(x.group(2)))
-        fleInput = CLB_IO(inputName, self.name, outputName)
-        # fleInput.setNextIO( CLB(int(x.group(1)),int(x.group(2))) )
-        fleInput.addNextIO(self.getIO(outputName))
-        self.addIO(fleInput)
 
 class LUTNode(RoutingNode):
     def __init__(self, name="", type="", path="", values:[int]=None):

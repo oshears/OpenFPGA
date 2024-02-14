@@ -62,6 +62,26 @@ def mapMuxes(modules:dict[str,Module]):
                         for i in range(int(io[1])):
                             newIO = IO(io[0] + f"[{i}]", moduleName, io[2])
                             modules[moduleName].addIO(newIO)
+            
+            # if clb, then add the extra fle internal wires
+            if "clb" in moduleName:
+                
+                # add the four (4) FLE internal output wires (because there are four FLEs per CLB)
+                clb_out_mappings = [
+                    "bottom_width_0_height_0_subtile_0__pin_O_0_",
+                    "left_width_0_height_0_subtile_0__pin_O_1_", 
+                    "top_width_0_height_0_subtile_0__pin_O_2_", 
+                    "right_width_0_height_0_subtile_0__pin_O_3_",
+                ]
+                for i in range(4):
+                    internalWireName = f"logical_tile_clb_mode_default__fle_{i}_fle_out"
+
+                    ## create and add the wire
+                    clb_internal_port = CLB_IO(internalWireName, moduleName)
+                    module.addIO(clb_internal_port)
+
+                    ## map the wire between the FLE and the CLB output
+                    module.mapIO(internalWireName, clb_out_mappings[i], True)
                     
             # now open the multiplex info file for the current module
             with open(f"{baseDir}/debug/bitstream_validator/mux_mappings/{module_mappings[moduleName]}.mux","r+") as muxCsvFile:
@@ -99,9 +119,9 @@ def mapMuxes(modules:dict[str,Module]):
                                 gpioSetting = newNode.getSetting()
 
                                 if gpioSetting == 'in_pad':
-                                    modules[moduleName].mapIO(fixedMuxLine[2],fixedMuxLine[4],newNode)
+                                    modules[moduleName].mapIO(fixedMuxLine[2],fixedMuxLine[4])
                                 else:
-                                    modules[moduleName].mapIO(fixedMuxLine[3],fixedMuxLine[2],newNode)
+                                    modules[moduleName].mapIO(fixedMuxLine[3],fixedMuxLine[2])
                     
                     # else it is a regular multiplexer
                     else:
@@ -137,21 +157,23 @@ def mapMuxes(modules:dict[str,Module]):
                                 elif "size14" in fixedMuxLine[1]:
                                     newNode:MuxTreeSize14Node = MuxTreeSize14Node(node.name,fixedMuxLine[1],node.path,node.values)
 
-
+                                # append the newly created (edited) routing node to the list of new nodes
                                 newNodes.append(newNode)
 
                                 # get the index of the input the mux is configured to select/propagate
                                 muxChoice = newNode.getInputChoice()
 
+                                if muxChoice == None and newNode.hasConfigBits():
+                                    raise Exception("Calculated no choice when mux was configured with bits!")
+
+                                # if the mux is selecting something that is not the default value
                                 if muxChoice != None:
-                                    # print(moduleName)
-                                    # print(fixedMuxLine[2+muxChoice])
-                                    # print(fixedMuxLine[-1])
-                                    # print(newNode)
 
                                     # if the current module is a CLB, we have to do a translation in order to get the proper io name
                                     if "clb" in moduleName:
-                                        clb_io_mappings = {
+
+                                        # this is a list of clb input to output mappings
+                                        clb_input_mappings = {
                                             "clb_I[0]":"top_width_0_height_0_subtile_0__pin_I_0_",
                                             "clb_I[1]":"right_width_0_height_0_subtile_0__pin_I_1_",
                                             "clb_I[2]":"bottom_width_0_height_0_subtile_0__pin_I_2_",
@@ -162,66 +184,78 @@ def mapMuxes(modules:dict[str,Module]):
                                             "clb_I[7]":"left_width_0_height_0_subtile_0__pin_I_7_",
                                             "clb_I[8]":"top_width_0_height_0_subtile_0__pin_I_8_",
                                             "clb_I[9]":"right_width_0_height_0_subtile_0__pin_I_9_",
-                                            "clb_O[0]":"bottom_width_0_height_0_subtile_0__pin_O_0_",
-                                            "clb_O[1]":"left_width_0_height_0_subtile_0__pin_O_1_",
-                                            "clb_O[2]":"top_width_0_height_0_subtile_0__pin_O_2_",
-                                            "clb_O[3]":"right_width_0_height_0_subtile_0__pin_O_3_",
                                             "logical_tile_clb_mode_default__fle_0_fle_out":"logical_tile_clb_mode_default__fle_0_fle_out",
                                             "logical_tile_clb_mode_default__fle_1_fle_out":"logical_tile_clb_mode_default__fle_1_fle_out",
                                             "logical_tile_clb_mode_default__fle_2_fle_out":"logical_tile_clb_mode_default__fle_2_fle_out",
                                             "logical_tile_clb_mode_default__fle_3_fle_out":"logical_tile_clb_mode_default__fle_3_fle_out"
                                         }
-                                        # clb_fle_mappings = {
-                                        #     "logical_tile_clb_mode_default__fle_0_fle_out":"clb_0[0]",
-                                        #     "logical_tile_clb_mode_default__fle_1_fle_out":"clb_0[1]",
-                                        #     "logical_tile_clb_mode_default__fle_2_fle_out":"clb_0[2]",
-                                        #     "logical_tile_clb_mode_default__fle_3_fle_out":"clb_0[3]",
-                                        # }
-                                        clb_fle_out_mappings = {
-                                            "mux_tree_size14_0_out":"bottom_width_0_height_0_subtile_0__pin_O_0_",
-                                            "mux_tree_size14_1_out":"bottom_width_0_height_0_subtile_0__pin_O_0_",
-                                            "mux_tree_size14_2_out":"bottom_width_0_height_0_subtile_0__pin_O_0_",
-                                            "mux_tree_size14_3_out":"bottom_width_0_height_0_subtile_0__pin_O_0_",
-                                            "mux_tree_size14_4_out":"left_width_0_height_0_subtile_0__pin_O_1_",
-                                            "mux_tree_size14_5_out":"left_width_0_height_0_subtile_0__pin_O_1_",
-                                            "mux_tree_size14_6_out":"left_width_0_height_0_subtile_0__pin_O_1_",
-                                            "mux_tree_size14_7_out":"left_width_0_height_0_subtile_0__pin_O_1_",
-                                            "mux_tree_size14_8_out":"top_width_0_height_0_subtile_0__pin_O_2_",
-                                            "mux_tree_size14_9_out":"top_width_0_height_0_subtile_0__pin_O_2_",
-                                            "mux_tree_size14_10_out":"top_width_0_height_0_subtile_0__pin_O_2_",
-                                            "mux_tree_size14_11_out":"top_width_0_height_0_subtile_0__pin_O_2_",
-                                            "mux_tree_size14_12_out":"right_width_0_height_0_subtile_0__pin_O_3_",
-                                            "mux_tree_size14_13_out":"right_width_0_height_0_subtile_0__pin_O_3_",
-                                            "mux_tree_size14_14_out":"right_width_0_height_0_subtile_0__pin_O_3_",
-                                            "mux_tree_size14_15_out":"right_width_0_height_0_subtile_0__pin_O_3_",
+
+                                        # this is a list of mux outputs to clb outputs (skipping over the FLEs)
+                                        clb_output_mappings = {
+                                            "mux_tree_size14_0_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
+                                            "mux_tree_size14_1_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
+                                            "mux_tree_size14_2_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
+                                            "mux_tree_size14_3_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
+                                            "mux_tree_size14_4_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
+                                            "mux_tree_size14_5_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
+                                            "mux_tree_size14_6_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
+                                            "mux_tree_size14_7_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
+                                            "mux_tree_size14_8_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
+                                            "mux_tree_size14_9_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
+                                            "mux_tree_size14_10_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
+                                            "mux_tree_size14_11_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
+                                            "mux_tree_size14_12_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
+                                            "mux_tree_size14_13_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
+                                            "mux_tree_size14_14_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
+                                            "mux_tree_size14_15_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
                                         }
-                                        cross_fle_inputs = [
-                                            "logical_tile_clb_mode_default__fle_0_fle_out",
-                                            "logical_tile_clb_mode_default__fle_1_fle_out",
-                                            "logical_tile_clb_mode_default__fle_2_fle_out",
-                                            "logical_tile_clb_mode_default__fle_3_fle_out"
-                                        ]
+
 
                                         # map the input that the mux is configured to select to...
-                                        translatedInput = clb_io_mappings[fixedMuxLine[2+muxChoice]]
-                                        # translatedOutput = clb_io_mappings[fixedMuxLine[-1]]
-                                        translatedOutput = clb_fle_out_mappings[fixedMuxLine[-1]]
+
+                                        # we want the input to be the top level CLB module inputs (e.g., top_width_0_height_0_subtile_0__pin_I_0_), not the internal CLB inputs (e.g., clb_I[0])
+                                        translatedInput = clb_input_mappings[fixedMuxLine[2+muxChoice]]
+
+                                        # we want the output to be the top level CLB module outputs (e.g., bottom_width_0_height_0_subtile_0__pin_O_0_), not the internal CLB inputs (e.g., clb_O[0])
+                                        translatedOutput = clb_output_mappings[fixedMuxLine[-1]][1]
+
+
+                                        # if the input is coming from an internal CLB net...
                                         if "logical_tile_clb_mode_default__fle_" in translatedInput:
-                                            ## Temporary, map internal IO only
-                                            modules[moduleName].mapInternalIO(translatedInput,translatedOutput, newNode)
-                                            # newNode.setInput(modules[moduleName].io[translatedInput])
-                                            # newNode.setOutput(modules[moduleName].io[translatedOutput])
+                                            x = re.match(r"mux_fle_(\d+)_in_\d+", fixedMuxLine[0])
+                                            fle_index = x.group(1)
+
+                                            # map the wire connecting the output of the prior FLE to the output of the current FLE
+                                            modules[moduleName].mapIO(f"logical_tile_clb_mode_default__fle_{fle_index}_fle_out",translatedInput)
+
+                                            # modules[moduleName].io[f"logical_tile_clb_mode_default__fle_{fle_index}_fle_out"].mux = newNode
+                                            # modules[moduleName].io[translatedOutput].mux = newNode
+
+                                            newNode.setSelectedInput(modules[moduleName].io[translatedInput])
+                                            newNode.setMuxOutput(modules[moduleName].io[translatedOutput])
+
+                                            
+
+                                        # if the input is coming from outside of the CLB
                                         else:
-                                            modules[moduleName].mapIO(translatedInput,translatedOutput, newNode)
+                                            modules[moduleName].mapIO(translatedInput,translatedOutput)
+                                            
+                                            newNode.setSelectedInput(modules[moduleName].io[translatedInput])
+                                            newNode.setMuxOutput(modules[moduleName].io[translatedOutput])
+
+                                            modules[moduleName].io[translatedInput].mux = newNode
+                                            modules[moduleName].io[translatedOutput].mux = newNode
                                     
                                     # all other non-CLB cases
                                     else:
                                         # map the input that the mux is configured to select to...
-                                        modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1], newNode)
+                                        modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1])
                                         
                                         # configured mux association
-                                        newNode.setInput(modules[moduleName].io[fixedMuxLine[2+muxChoice]])
-                                        newNode.setOutput(modules[moduleName].io[fixedMuxLine[-1]])
+                                        newNode.setSelectedInput(modules[moduleName].io[fixedMuxLine[2+muxChoice]])
+                                        newNode.setMuxOutput(modules[moduleName].io[fixedMuxLine[-1]])
+
+                                        # associate ports with their muxes
                                         modules[moduleName].io[fixedMuxLine[2+muxChoice]].mux = newNode
                                         modules[moduleName].io[fixedMuxLine[-1]].mux = newNode
                                         
@@ -230,8 +264,9 @@ def mapMuxes(modules:dict[str,Module]):
                                         print("Routing node was not defaulted but still returned CONST1")
                                         print(f"\tValues: {node.values}")
 
-
+                # update all of the Routing Nodes (Muxes) in this module
                 modules[moduleName].nodes = newNodes
+
 
     return modules
 

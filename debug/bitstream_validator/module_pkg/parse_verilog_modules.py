@@ -140,7 +140,7 @@ def parseModules():
                     muxInputs = x.group(1).split(",")
                     for muxInput in muxInputs:
                         if y := re.match(r"\s*(.+)\[(\d+):(\d+)\]",muxInput):
-                            size = int(y.group(3))
+                            size = int(y.group(3)) + 1
                             for i in range(size):
                                 muxConfig.append(f"{y.group(1)}[{i}]")
                         else:
