@@ -1,6 +1,8 @@
 from module_pkg.module_classes import *
 from module_pkg.fpga_top_parse import *
-from module_pkg.module_graph import *
+from module_pkg.map_muxes import *
+from module_pkg.parse_verilog_modules import *
+from module_pkg.get_bitstream_modules import *
 
 def displayRoutes(modules:[str, Module]):
     fh = open(f"{baseDir}/debug/bitstream_validator/outRoutes.txt","w+")
