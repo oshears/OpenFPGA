@@ -374,6 +374,10 @@ def mapMuxes(modules:dict[str,Module]):
                                 muxChoice = newNode.getInputChoice()
 
                                 if muxChoice != None:
+                                    # print(moduleName)
+                                    # print(fixedMuxLine[2+muxChoice])
+                                    # print(fixedMuxLine[-1])
+                                    # print(newNode)
 
                                     # if the current module is a CLB, we have to do a translation in order to get the proper io name
                                     if "clb" in moduleName:
@@ -434,14 +438,23 @@ def mapMuxes(modules:dict[str,Module]):
                                         translatedOutput = clb_fle_out_mappings[fixedMuxLine[-1]]
                                         if "logical_tile_clb_mode_default__fle_" in translatedInput:
                                             ## Temporary, map internal IO only
-                                            modules[moduleName].mapInternalIO(translatedInput,translatedOutput,newNode)
+                                            modules[moduleName].mapInternalIO(translatedInput,translatedOutput, newNode)
+                                            # newNode.setInput(modules[moduleName].io[translatedInput])
+                                            # newNode.setOutput(modules[moduleName].io[translatedOutput])
                                         else:
-                                            modules[moduleName].mapIO(translatedInput,translatedOutput,newNode)
+                                            modules[moduleName].mapIO(translatedInput,translatedOutput, newNode)
                                     
                                     # all other non-CLB cases
                                     else:
                                         # map the input that the mux is configured to select to...
-                                        modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1],newNode)
+                                        modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1], newNode)
+                                        
+                                        # configured mux association
+                                        newNode.setInput(modules[moduleName].io[fixedMuxLine[2+muxChoice]])
+                                        newNode.setOutput(modules[moduleName].io[fixedMuxLine[-1]])
+                                        modules[moduleName].io[fixedMuxLine[2+muxChoice]].mux = newNode
+                                        modules[moduleName].io[fixedMuxLine[-1]].mux = newNode
+                                        
                                 else:
                                     if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
                                         print("Routing node was not defaulted but still returned CONST1")

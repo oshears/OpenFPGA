@@ -57,35 +57,86 @@ def tracePaths(modules:[str, Module]):
     fh.close()
 
 
-def reportHasSink(root:IO,outFile):
+# def hasSinglePathPreceedingMux(root:IO, outFile):
+    
+#     # does this node have a previous driving IO
+#     if root.hasPrevIO():
+        
+#         # if none of the previous driving IO are direct wire connections 
+#         # and if the current port is not part of a "grid_io" module
+#         if (True not in root.previoIsDirect) and ("grid_io" not in root.moduleName):
+            
+#             # for each prevIO that is presumably a MUX
+#             for prevIO in root.prevIO:
+                
+#                 # if the mux has multiple options, then it could just be driving something else
+#                 # if the mux has one option, then it must be driving this chain
+#                 if len(prevIO.nextIO) == 1:
+                    
+#                     outFile.write(f"\tPossible Single Path Preceeding Mux: {prevIO}\n")
+                    
+#             return True
+#         else:
+#             for prevIO in root.prevIO:
+#                 return hasSinglePathPreceedingMux(prevIO,outFile)
+#     else:
+#         return False
+
+def reportHasSink(root:IO,outFile,pathLength=0):
     
     for nextIO in root.nextIO:
-        reportHasSink(nextIO, outFile)
+        reportHasSink(nextIO, outFile, pathLength + 1)
 
     # if not root.hasNextIO() and ("GPIO_PAD" not in root.name) and (root.direction == "output"):
 
     # if the port does not have a next and is not a GPIO_PAD, it might be a dead end
     if not root.hasNextIO() and ("GPIO_PAD" not in root.name):
         # check to see if it had something leading to it, otherwise we disqualify it
-        if root.hasPrevIO():
-            # if it had something leading to it, make sure it wasn't just a wire connections (i.e., it was intentionally routed)
-            if not root.previoIsDirect[0]:
-                outFile.write(f"{root.prevIO[0]}\n")
+        # if root.hasPrevIO():
+        # if it had something leading to it, make sure it wasn't just a wire connections (i.e., it was intentionally routed)
+        # if not root.previoIsDirect[0]:
+        
+        if "grid_clb" not in root.prevIO[0].moduleName: # TODO: DEBUG: Remove when finished implementing CLB stuff
+            if hasSinglePathPreceedingMux(root, outFile):
+                outFile.write(f"L={pathLength}, {root.prevIO[0]}\n")
 
+def hasSink(root:IO):
+    
+    for nextIO in root.nextIO:
+        if hasSink(nextIO):
+            return True
+            
+    if not root.hasNextIO() and ("GPIO_PAD" in root.name):
+        return True
+    
+    return False
 
+def printMuxPaths(root:IO, outFile, level=1):
+    outFile.write(level*"\t" + f"{root}\n")
+    for nextIO in root.nextIO:
+        printMuxPaths(nextIO, outFile, level + 1)
+            
 def printDeadEnds(modules:[str, Module]):
 
     fh = open(f"{baseDir}/debug/bitstream_validator/deadEnds.txt","w+")
 
     for module in modules.values():
-        for port in module.io.values():
+        # for port in module.io.values():
+        for mux in module.nodes:
             # if not port.hasNextIO() and not port.hasPrevIO():
             #     fh.write(f"{port}\n")
             # if port.hasNextIO():
             #     fh.write(f"{port}\n")
             # if port.hasPrevIO():
             #     fh.write(f"{port}\n")
-            reportHasSink(port,fh)
+            
+            # skip IO Pads
+            # reportHasSink(port,fh)
+            if mux.hasConfigBits() and mux.outputPort != None and (not hasSink(mux.outputPort)):
+                fh.write(f"{mux}\n")
+                printMuxPaths(mux.outputPort, fh)
+            
+            
     fh.close();
 
 if __name__ == "__main__":

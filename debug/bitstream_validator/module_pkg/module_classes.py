@@ -7,6 +7,8 @@ class RoutingNode:
         self.name = name
         self.type = type
         self.path = path 
+        self.selectedInput = None
+        self.outputPort = None
 
         if values:
             self.values = values   
@@ -18,6 +20,15 @@ class RoutingNode:
 
     def __str__(self) -> str:
         return f"{self.path} : {self.values.__str__()}"
+    
+    def setInput(self, inputPort):
+        self.selectedInput = inputPort
+    
+    def setOutput(self, outputPort):
+        self.outputPort = outputPort
+        
+    def hasConfigBits(self):
+        return 1 in self.values
 
 class GPIO_PAD(RoutingNode):
     def __init__(self, name="", type="", path="", value:int=0):
@@ -40,6 +51,7 @@ class IO:
         self.moduleName = module
         self.nextioIsDirect = []
         self.previoIsDirect = []
+        self.mux = None
     
     def __str__(self) -> str:
         outputString = ""
@@ -89,7 +101,7 @@ class Module:
         self.io:[str, IO] = {}
         self.input2output_maps = {}
 
-    def addNode(self,node:RoutingNode):
+    def addNode(self, node:RoutingNode):
         # self.nodes[node.path] = node
         self.nodes.append(node)
     
