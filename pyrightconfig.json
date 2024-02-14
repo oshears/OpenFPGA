@@ -1,0 +1,21 @@
+// This file speeds up Pylance stuff (i.e., slow renaming of files)
+// https://github.com/microsoft/vscode-python/issues/13041
+// https://github.com/microsoft/pylance-release/issues/642#issuecomment-732175189
+{
+    "exclude": [
+        "**/.git",
+        "**/env",
+        "**/.github",
+        "**/.vscode",
+        "**/.svn",
+        "**/.hg",
+        "**/CVS",
+        "**/.DS_Store",
+        "**/Thumbs.db",
+        "**/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs",
+        "**/debug/architectures/random_bitstreams",
+        "**/debug/architectures/random_bitstreams_16LUT",
+        "**/debug/architectures/arch_gen/results/random_designs",
+        "**/debug/architectures/arch_gen/results/bitstreams"
+    ],
+}
