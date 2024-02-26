@@ -23,18 +23,18 @@ def getModules(baseDir, bitstreamFile) -> dict[str, Module]:
             modules[moduleName] = Module(child.attrib['name'],"")
 
     # iterate through all nodes with a bitstream child
-    for primitive in root.findall(".//bitstream/.."): 
-        path = "/".join([f"{primitive[0][i].attrib['name']}" for i in range(1,len(primitive[0]))])
-        topModuleName = primitive[0][1].attrib["name"]
+    for configNode in root.findall(".//bitstream/.."): 
+        path = "/".join([f"{configNode[0][i].attrib['name']}" for i in range(1,len(configNode[0]))])
+        topModuleName = configNode[0][1].attrib["name"]
         
-        bits = [int(primitive[-1][i].attrib["value"]) for i in range(len(primitive[-1])-1,-1,-1)]
+        bits = [int(configNode[-1][i].attrib["value"]) for i in range(len(configNode[-1])-1,-1,-1)]
         
         node = None
 
         # if "lut4_DFF_mem" in path:
             
         # else:
-        node = RoutingNode(primitive[0][-1].attrib["name"],primitive[0][-1].attrib["name"],path,len(bits),bits)
+        node = RoutingNode(configNode[0][-1].attrib["name"],configNode[0][-1].attrib["name"],path,len(bits),bits)
 
         modules[topModuleName].addNode(node)
         
