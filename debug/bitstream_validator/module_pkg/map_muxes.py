@@ -265,11 +265,20 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                     if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
                                         print("Routing node was not defaulted but still returned CONST1")
                                         print(f"\tValues: {node.values}")
+                            # else:
+                            #     # copy over LUT configs and FF configs
+                            #     # for node in modules[moduleName].nodes:
+                            #     # if "lut4_DFF_mem" in node.name or "mem_ble4_out_0" in node.name: 
+                                
+                            #     if "lut4_DFF_mem" in node.name or "mem_ble4_out_0" in node.name: 
+                            #         newNodes.append(node)
 
-                # copy over LUT configs and FF configs
+                            #     # continue
+                                        
                 for node in modules[moduleName].nodes:
                     if "lut4_DFF_mem" in node.name or "mem_ble4_out_0" in node.name: 
-                        newNodes.append(node)
+                        # newNodes.append(node)
+                        newNodes.insert(0,node)
 
                 # update all of the Routing Nodes (Muxes) in this module
                 modules[moduleName].nodes = newNodes
