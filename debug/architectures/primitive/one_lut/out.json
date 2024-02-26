@@ -1,0 +1,95 @@
+{
+  "creator": "Yosys 0.35+58 (git sha1 8bd681acf, gcc 11.4.0-1ubuntu1~22.04 -fPIC -Os)",
+  "modules": {
+    "fpga_design": {
+      "attributes": {
+        "src": "./benchmark/prim.v:3.1-43.10",
+        "top": "00000000000000000000000000000001"
+      },
+      "ports": {
+        "lut_in3": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "lut_in2": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "lut_in1": {
+          "direction": "input",
+          "bits": [ 4 ]
+        },
+        "lut_in0": {
+          "direction": "input",
+          "bits": [ 5 ]
+        },
+        "lut_out": {
+          "direction": "output",
+          "bits": [ 6 ]
+        }
+      },
+      "cells": {
+        "$abc$239$auto$blifparse.cc:525:parse_blif$240": {
+          "hide_name": 1,
+          "type": "$lut",
+          "parameters": {
+            "LUT": "0000000000000001",
+            "WIDTH": "00000000000000000000000000000100"
+          },
+          "attributes": {
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3, 2, 4, 5 ],
+            "Y": [ 6 ]
+          }
+        }
+      },
+      "netnames": {
+        "lut_in0": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "keep": "00000000000000000000000000000001",
+            "src": "./benchmark/prim.v:5.23-5.30"
+          }
+        },
+        "lut_in1": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "keep": "00000000000000000000000000000001",
+            "src": "./benchmark/prim.v:6.23-6.30"
+          }
+        },
+        "lut_in2": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "keep": "00000000000000000000000000000001",
+            "src": "./benchmark/prim.v:7.23-7.30"
+          }
+        },
+        "lut_in3": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "keep": "00000000000000000000000000000001",
+            "src": "./benchmark/prim.v:8.23-8.30"
+          }
+        },
+        "lut_out": {
+          "hide_name": 0,
+          "bits": [ 6 ],
+          "attributes": {
+            "keep": "00000000000000000000000000000001",
+            "src": "./benchmark/prim.v:9.23-9.30"
+          }
+        }
+      }
+    }
+  }
+}

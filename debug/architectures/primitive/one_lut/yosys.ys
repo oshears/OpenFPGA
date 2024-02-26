@@ -1,9 +1,7 @@
-# Yosys synthesis script for ${TOP_MODULE}
-# Read verilog files
-read_verilog ${READ_VERILOG_OPTIONS} ${VERILOG_FILES}
+read_ilang /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/primitive/prim.il
 
 # Technology mapping
-hierarchy -top ${TOP_MODULE}
+hierarchy -top fpga_design
 proc
 techmap -D NO_LUT -map +/adff2dff.v
 
@@ -29,13 +27,13 @@ opt -fast -nodffe -nosdff
 clean
 
 # LUT mapping
-abc -lut ${LUT_SIZE}
+abc -lut 4
 
 # Check
 synth -run check
 
 # Clean and output blif
 opt_clean -purge
-write_blif ${OUTPUT_BLIF}
-write_json ${OUTPUT_BLIF}.json
-write_ilang ${OUTPUT_BLIF}.il
+write_blif /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/primitive/out.blif
+write_json /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/primitive/out.json
+write_ilang /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/primitive/out.il

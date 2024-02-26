@@ -6,6 +6,7 @@
 ```
 source /home/oshears/Documents/openfpga/OpenFPGA/openfpga.sh
 python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/generate_fabric
+python3 openfpga_flow/scripts/run_fpga_task.py fpga_verilog/adder/hard_adder
 ```
 
 ---
