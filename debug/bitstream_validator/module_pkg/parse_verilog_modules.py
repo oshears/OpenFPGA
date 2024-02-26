@@ -4,10 +4,15 @@ from . import *
 from .module_classes import *
 
 
-## This method parses the verilog module files for each top level module
-## It then writes out all of the inputs and outputs for that top level module
-## It also extracts information about the muxes that exist in that module and what they're connected to
-def parseModules():
+
+def parseModules(baseDir, resultsPath):
+    '''
+    This method parses the verilog module files for each top level module
+
+    It then writes out all of the inputs and outputs for that top level module
+    
+    It also extracts information about the muxes that exist in that module and what they're connected to
+    '''
 
     all_files = [   "sb_0__2_",
                     "sb_0__1_",

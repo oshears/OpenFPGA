@@ -2,19 +2,20 @@ from xml.etree import ElementTree
 import csv
 import re
 
-baseDir = "/home/oshears/Documents/openfpga/OpenFPGA"
+# baseDir = "/home/oshears/Documents/openfpga/OpenFPGA"
 
-resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run014/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+# resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run014/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+# resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run003/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
 
-bitstreamFile = f"{resultsPath}/fabric_independent_bitstream.xml"
+
 # bitstreamFile = f"{baseDir}/debug/bitstream_validator/fabric_independent_bitstream_1.xml"
 # bitstreamFile = f"{baseDir}/debug/bitstream_validator/fabric_independent_bitstream_2.xml"
 # bitstreamFile = f"{baseDir}/debug/bitstream_validator/bitstreams/one_in_one_clb.xml"
 
 
-moduleFile = f"{resultsPath}/SRC/routing/sb_0__2_.v"
-moduleName = "sb_0__2_"
-moduleType = "sb_0__2_"
+# moduleFile = f"{resultsPath}/SRC/routing/sb_0__2_.v"
+# moduleName = "sb_0__2_"
+# moduleType = "sb_0__2_"
 
 module_order = [
     "grid_io_bottom_1__0_",

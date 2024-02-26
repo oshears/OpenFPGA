@@ -30,6 +30,12 @@ class RoutingNode:
         
     def hasConfigBits(self):
         return 1 in self.values
+    
+    def isLut(self):
+        return "lut4_DFF_mem" in self.type
+    
+    def isLutOutput(self):
+        return "mem_ble4_out_0" in self.type
 
 class GPIO_PAD(RoutingNode):
     def __init__(self, name="", type="", path="", value:int=0):

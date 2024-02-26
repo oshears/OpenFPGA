@@ -57,7 +57,7 @@ class Connection:
 ## This method takes in a list of the modules parsed from the bitstream and maps the 
 ## connections between each of the modules in the fpga_top.v file
 ## the result is a modified modules dictionary with each of the IO being connected (after calling makeLinks())
-def parseTop(modules):
+def parseTop(modules, resultsPath):
     wires = {}
 
     top_fh = open(f"{resultsPath}/SRC/fpga_top.v")

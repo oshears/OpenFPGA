@@ -3,13 +3,17 @@ from . import *
 # import module_pkg.module_classes.Module
 from .module_classes import *
 
-### get modules and their bit configurations from the xml bitstream file
-def getModules() -> dict[str, Module]:
-    print(bitstreamFile)
+def getModules(baseDir, bitstreamFile) -> dict[str, Module]:
+    '''
+    get modules and their bit configurations from the xml bitstream file
+    '''
+    
     tree = ElementTree.parse(bitstreamFile)
     root = tree.getroot()
 
     modules = {}
+
+    # loop through each child module and create a class for it
     for child in root:
         moduleName = child.attrib['name']
 
@@ -17,13 +21,19 @@ def getModules() -> dict[str, Module]:
             modules[moduleName] = CLBModule(child.attrib['name'],"")
         else:
             modules[moduleName] = Module(child.attrib['name'],"")
-        
-    for primitive in root.findall(".//bitstream/.."): # iterate through all nodes with a bitstream child
+
+    # iterate through all nodes with a bitstream child
+    for primitive in root.findall(".//bitstream/.."): 
         path = "/".join([f"{primitive[0][i].attrib['name']}" for i in range(1,len(primitive[0]))])
         topModuleName = primitive[0][1].attrib["name"]
         
         bits = [int(primitive[-1][i].attrib["value"]) for i in range(len(primitive[-1])-1,-1,-1)]
         
+        node = None
+
+        # if "lut4_DFF_mem" in path:
+            
+        # else:
         node = RoutingNode(primitive[0][-1].attrib["name"],primitive[0][-1].attrib["name"],path,len(bits),bits)
 
         modules[topModuleName].addNode(node)

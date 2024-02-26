@@ -142,17 +142,76 @@ def printDeadEnds(modules:Union[str, Module]):
             
     fh.close();
 
+def genNewBitstreams(modules):
+    module_order = [
+        "grid_io_bottom_1__0_",
+        "grid_io_bottom_2__0_",
+        "grid_io_right_3__1_",
+        "grid_io_right_3__2_",
+        "sb_2__2_",
+        "cbx_2__2_",
+        "grid_io_top_2__3_",
+        "sb_1__2_",
+        "cbx_1__2_",
+        "grid_io_top_1__3_",
+        "sb_0__2_",
+        "sb_0__1_",
+        "cby_0__2_",
+        "grid_io_left_0__2_",
+        "sb_0__0_",
+        "cby_0__1_",
+        "grid_io_left_0__1_",
+        "sb_1__0_",
+        "cbx_1__0_",
+        "cby_1__1_",
+        "grid_clb_1__1_",
+        "sb_2__0_",
+        "cbx_2__0_",
+        "cby_2__1_",
+        "grid_clb_2__1_",
+        "sb_2__1_",
+        "cbx_2__1_",
+        "cby_2__2_",
+        "grid_clb_2__2_",
+        "sb_1__1_",
+        "cbx_1__1_",
+        "cby_1__2_",
+        "grid_clb_1__2_"
+    ]
+
+    fh = open("/home/oshears/Documents/openfpga/OpenFPGA/debug/bitstream_validator/out.csv","w+")
+    for moduleName in module_order:
+        module:Module = modules[moduleName]
+
+        for mux in module.nodes:
+            bitLine = ""
+            bitLine += f"{moduleName},"
+            bitLine += f"{mux.name},"
+            bitLine += f"{mux.type},"
+            bitLine += f"{mux.path},"
+
+            for bit in mux.values:
+
+                fh.write(bitLine + f"{bit}\n")
+    
+    fh.close()
+
 if __name__ == "__main__":
-    modules:dict[str, Module] = getModules()
+
+    baseDir = "/home/oshears/Documents/openfpga/OpenFPGA"
+    resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run003/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    bitstreamFile = f"{resultsPath}/fabric_independent_bitstream.xml"
+
+    modules:dict[str, Module] = getModules(baseDir, bitstreamFile)
 
     # Identify all of the modules being used (from the top level, per the information from the bitstream)
-    parseModules()
+    parseModules(baseDir, resultsPath)
 
     # Use information from the bitstreams to determine the mux configurations, and thus the internal routes being used
-    mapMuxes(modules)
+    mapMuxes(baseDir, modules)
 
     # Connect the modules per the information from fpga_top.v
-    parseTop(modules)
+    parseTop(modules, resultsPath)
 
     # write the routes being actively used out to files
     displayRoutes(modules)
@@ -162,3 +221,5 @@ if __name__ == "__main__":
 
     # print dead ends
     printDeadEnds(modules)
+
+    genNewBitstreams(modules)
