@@ -1,0 +1,2 @@
+/home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/arch_gen/bitstreams.tar.gz filter=lfs diff=lfs merge=lfs -text
+/home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/arch_gen/results/random_designs.tar.gz filter=lfs diff=lfs merge=lfs -text
