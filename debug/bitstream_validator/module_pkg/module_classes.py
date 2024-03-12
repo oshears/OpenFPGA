@@ -10,6 +10,7 @@ class RoutingNode:
         self.path = path 
         self.selectedInput = None
         self.muxOutput = None
+        self.desc = ""
 
         if values:
             self.values = values   
@@ -20,7 +21,7 @@ class RoutingNode:
         self.values = values
 
     def __str__(self) -> str:
-        return f"{self.path} : {self.values.__str__()}"
+        return f"{self.path} : {self.values.__str__()} ({self.desc})"
     
     def setSelectedInput(self, selectedInput):
         self.selectedInput = selectedInput
@@ -36,6 +37,9 @@ class RoutingNode:
     
     def isLutOutput(self):
         return "mem_ble4_out_0" in self.type
+    
+    def setMuxDescription(self, desc):
+        self.desc = desc
 
 class GPIO_PAD(RoutingNode):
     def __init__(self, name="", type="", path="", value:int=0):

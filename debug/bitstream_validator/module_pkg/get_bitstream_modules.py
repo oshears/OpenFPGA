@@ -36,6 +36,14 @@ def getModules(baseDir, bitstreamFile) -> dict[str, Module]:
         # else:
         node = RoutingNode(configNode[0][-1].attrib["name"],configNode[0][-1].attrib["name"],path,len(bits),bits)
 
+        # Configure Descriptions of LUT and FF config bits            
+        # lut init data
+        if 'lut4_DFF_mem' in node.path:
+            node.setMuxDescription("lut init data")
+        # lut ff config
+        elif 'mem_ble4_out_0' in node.path:
+            node.setMuxDescription("lut ff config")
+
         modules[topModuleName].addNode(node)
         
     

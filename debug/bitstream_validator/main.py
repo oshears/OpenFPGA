@@ -179,6 +179,8 @@ def genNewBitstreams(modules):
         "grid_clb_1__2_"
     ]
     module_order.reverse()
+    
+    bitCount = 0
 
     fh = open("/home/oshears/Documents/openfpga/OpenFPGA/debug/bitstream_validator/out.csv","w+")
     for moduleName in module_order:
@@ -186,17 +188,20 @@ def genNewBitstreams(modules):
 
         # for mux in module.nodes:
         for muxIdx in range(len(module.nodes)-1,-1,-1):
-            mux = module.nodes[muxIdx]
+            mux:RoutingNode = module.nodes[muxIdx]
             bitLine = ""
             bitLine += f"{moduleName},"
             bitLine += f"{mux.name},"
             bitLine += f"{mux.type},"
             bitLine += f"{mux.path},"
+            bitLine += f"{mux.desc},"
 
             # for bitIdx in range(len(mux.values)-1,-1,-1):
             for bitIdx in range(len(mux.values)):
 
-                fh.write(bitLine + f"{mux.values[bitIdx]}\n")
+                fh.write(f"{bitCount}," + bitLine + f"{mux.values[bitIdx]}\n")
+
+                bitCount += 1
     
     fh.close()
 

@@ -116,6 +116,7 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                             nodeName = node.path.split("/")[1]
                             if nodeName == fixedMuxLine[0]:
                                 newNode = GPIO_PAD(nodeName,fixedMuxLine[1],node.path,node.values[0])
+                                newNode.setMuxDescription("gpio config")
                                 newNodes.append(newNode)
 
                                 gpioSetting = newNode.getSetting()
@@ -162,6 +163,48 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                 # append the newly created (edited) routing node to the list of new nodes
                                 newNodes.append(newNode)
 
+                                if "clb" not in moduleName:
+                                    # configured mux association
+                                    newNode.setMuxOutput(modules[moduleName].io[fixedMuxLine[-1]])
+
+                                    # associate ports with their muxes
+                                    modules[moduleName].io[fixedMuxLine[-1]].mux = newNode
+
+                                    # sb
+                                    if 'sb_' in moduleName:
+                                        newNode.setMuxDescription("sb routing mux")
+                                    # cb
+                                    else:
+                                        if 'outpad' in newNode.muxOutput.name:
+                                            newNode.setMuxDescription("cb outpad routing mux")
+                                        else:
+                                            newNode.setMuxDescription("cb clb input routing mux")
+                                
+                                else:
+                                    # this is a list of mux outputs to clb outputs (skipping over the FLEs)
+                                    clb_output_mappings = {
+                                        "mux_tree_size14_0_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
+                                        "mux_tree_size14_1_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
+                                        "mux_tree_size14_2_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
+                                        "mux_tree_size14_3_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
+                                        "mux_tree_size14_4_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
+                                        "mux_tree_size14_5_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
+                                        "mux_tree_size14_6_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
+                                        "mux_tree_size14_7_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
+                                        "mux_tree_size14_8_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
+                                        "mux_tree_size14_9_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
+                                        "mux_tree_size14_10_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
+                                        "mux_tree_size14_11_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
+                                        "mux_tree_size14_12_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
+                                        "mux_tree_size14_13_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
+                                        "mux_tree_size14_14_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
+                                        "mux_tree_size14_15_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
+                                    }
+                                    # we want the output to be the top level CLB module outputs (e.g., bottom_width_0_height_0_subtile_0__pin_O_0_), not the internal CLB inputs (e.g., clb_O[0])
+                                    translatedOutput = clb_output_mappings[fixedMuxLine[-1]][1]
+                                    newNode.setMuxOutput(modules[moduleName].io[translatedOutput])
+                                    newNode.setMuxDescription("clb lut input configuration")
+
                                 # get the index of the input the mux is configured to select/propagate
                                 muxChoice = newNode.getInputChoice()
 
@@ -192,35 +235,11 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                             "logical_tile_clb_mode_default__fle_3_fle_out":"logical_tile_clb_mode_default__fle_3_fle_out"
                                         }
 
-                                        # this is a list of mux outputs to clb outputs (skipping over the FLEs)
-                                        clb_output_mappings = {
-                                            "mux_tree_size14_0_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
-                                            "mux_tree_size14_1_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
-                                            "mux_tree_size14_2_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
-                                            "mux_tree_size14_3_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
-                                            "mux_tree_size14_4_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
-                                            "mux_tree_size14_5_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
-                                            "mux_tree_size14_6_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
-                                            "mux_tree_size14_7_out":["left_width_0_height_0_subtile_0__pin_O_1_", "logical_tile_clb_mode_default__fle_1_fle_out"],
-                                            "mux_tree_size14_8_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
-                                            "mux_tree_size14_9_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
-                                            "mux_tree_size14_10_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
-                                            "mux_tree_size14_11_out":["top_width_0_height_0_subtile_0__pin_O_2_", "logical_tile_clb_mode_default__fle_2_fle_out"],
-                                            "mux_tree_size14_12_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
-                                            "mux_tree_size14_13_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
-                                            "mux_tree_size14_14_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
-                                            "mux_tree_size14_15_out":["right_width_0_height_0_subtile_0__pin_O_3_", "logical_tile_clb_mode_default__fle_3_fle_out"],
-                                        }
-
-
                                         # map the input that the mux is configured to select to...
-
                                         # we want the input to be the top level CLB module inputs (e.g., top_width_0_height_0_subtile_0__pin_I_0_), not the internal CLB inputs (e.g., clb_I[0])
                                         translatedInput = clb_input_mappings[fixedMuxLine[2+muxChoice]]
 
-                                        # we want the output to be the top level CLB module outputs (e.g., bottom_width_0_height_0_subtile_0__pin_O_0_), not the internal CLB inputs (e.g., clb_O[0])
-                                        translatedOutput = clb_output_mappings[fixedMuxLine[-1]][1]
-
+                                        newNode.setSelectedInput(modules[moduleName].io[translatedInput])
 
                                         # if the input is coming from an internal CLB net...
                                         if "logical_tile_clb_mode_default__fle_" in translatedInput:
@@ -233,18 +252,9 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                             # modules[moduleName].io[f"logical_tile_clb_mode_default__fle_{fle_index}_fle_out"].mux = newNode
                                             # modules[moduleName].io[translatedOutput].mux = newNode
 
-                                            newNode.setSelectedInput(modules[moduleName].io[translatedInput])
-                                            newNode.setMuxOutput(modules[moduleName].io[translatedOutput])
-
-                                            
-
                                         # if the input is coming from outside of the CLB
                                         else:
                                             modules[moduleName].mapIO(translatedInput,translatedOutput)
-                                            
-                                            newNode.setSelectedInput(modules[moduleName].io[translatedInput])
-                                            newNode.setMuxOutput(modules[moduleName].io[translatedOutput])
-
                                             modules[moduleName].io[translatedInput].mux = newNode
                                             modules[moduleName].io[translatedOutput].mux = newNode
                                     
@@ -255,7 +265,6 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                         
                                         # configured mux association
                                         newNode.setSelectedInput(modules[moduleName].io[fixedMuxLine[2+muxChoice]])
-                                        newNode.setMuxOutput(modules[moduleName].io[fixedMuxLine[-1]])
 
                                         # associate ports with their muxes
                                         modules[moduleName].io[fixedMuxLine[2+muxChoice]].mux = newNode
