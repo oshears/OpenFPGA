@@ -176,9 +176,9 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                     # cb
                                     else:
                                         if 'outpad' in newNode.muxOutput.name:
-                                            newNode.setMuxDescription("cb outpad routing mux")
+                                            newNode.setMuxDescription("cb outpad config")
                                         else:
-                                            newNode.setMuxDescription("cb clb input routing mux")
+                                            newNode.setMuxDescription("cb clb input config")
                                 
                                 else:
                                     # this is a list of mux outputs to clb outputs (skipping over the FLEs)
@@ -203,7 +203,7 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                     # we want the output to be the top level CLB module outputs (e.g., bottom_width_0_height_0_subtile_0__pin_O_0_), not the internal CLB inputs (e.g., clb_O[0])
                                     translatedOutput = clb_output_mappings[fixedMuxLine[-1]][1]
                                     newNode.setMuxOutput(modules[moduleName].io[translatedOutput])
-                                    newNode.setMuxDescription("clb lut input configuration")
+                                    newNode.setMuxDescription("lut input config")
 
                                 # get the index of the input the mux is configured to select/propagate
                                 muxChoice = newNode.getInputChoice()

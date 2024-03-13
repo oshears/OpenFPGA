@@ -11,6 +11,7 @@ class RoutingNode:
         self.selectedInput = None
         self.muxOutput = None
         self.desc = ""
+        self.sinks = None
 
         if values:
             self.values = values   
@@ -21,7 +22,11 @@ class RoutingNode:
         self.values = values
 
     def __str__(self) -> str:
-        return f"{self.path} : {self.values.__str__()} ({self.desc})"
+        if self.sinks is None:
+            return f"{self.path} : {self.values.__str__()} ({self.desc})"
+        else:
+            return f"{self.path} : {self.values.__str__()} ({self.desc}) ({','.join(self.sinks)})"
+            
     
     def setSelectedInput(self, selectedInput):
         self.selectedInput = selectedInput
@@ -40,6 +45,15 @@ class RoutingNode:
     
     def setMuxDescription(self, desc):
         self.desc = desc
+    
+    def setSink(self, sink):
+        self.sinks = [sink]
+    
+    def addSink(self, sink):
+        if self.sinks is None:
+            self.sinks = [sink]
+        else:
+            self.sinks.append(sink)
 
 class GPIO_PAD(RoutingNode):
     def __init__(self, name="", type="", path="", value:int=0):
@@ -57,12 +71,12 @@ class IO:
             raise Exception()
         
         self.direction = direction
-        self.nextIO = []
-        self.prevIO = []
+        self.nextIO:List[IO] = []
+        self.prevIO:List[IO] = []
         self.moduleName = module
         self.nextioIsDirect = []
         self.previoIsDirect = []
-        self.mux = None
+        self.mux:RoutingNode = None
     
     def __str__(self) -> str:
         outputString = ""

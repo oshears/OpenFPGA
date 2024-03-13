@@ -184,6 +184,8 @@ def genNewBitstreams(modules):
     bitCount = 0
 
     fh = open("/home/oshears/Documents/openfpga/OpenFPGA/debug/bitstream_validator/results/out.csv","w+")
+
+    fh.write("bit index,bit value,module,name,type,path,description,sinks\n")
     for moduleName in module_order:
         module:Module = modules[moduleName]
 
@@ -199,8 +201,12 @@ def genNewBitstreams(modules):
 
             # for bitIdx in range(len(mux.values)-1,-1,-1):
             for bitIdx in range(len(mux.values)):
+                
+                # this tells us where the results of this mux go (sinks)
+                # tells us what (sinks) does this mux drive
+                muxDrives = ",".join(mux.sinks) if mux.sinks is not None else "not specified"
 
-                fh.write(f"{bitCount}," + bitLine + f"{mux.values[bitIdx]}\n")
+                fh.write(f"{bitCount}," + f"{mux.values[bitIdx]}," + bitLine + f"{muxDrives}" + "\n")
 
                 bitCount += 1
     

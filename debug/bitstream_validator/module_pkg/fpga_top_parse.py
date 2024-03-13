@@ -28,10 +28,10 @@ class Connection:
             # first find the driving io
             numDrivers = 0
             driver = None
-            others = []
+            others:List[IO] = []
             for io in self.connections:
                 if io.direction == "output":
-                    driver = io
+                    driver:IO = io
                     numDrivers += 1
                 else:
                     others.append(io)
@@ -44,6 +44,13 @@ class Connection:
             for otherIO in others:
                 driver.addNextIO(otherIO,True)
 
+                # OYS: TODO: Add the top level modules that the IOs connect to to the other ones so we can see which muxes drive which modules
+                # this will make it easier to see the patterns between the IOs
+                if driver.mux is not None:
+                    driver.mux.addSink(f"{otherIO.moduleName}.{otherIO.name}")
+                    # driver.mux.addInfo(f"sink: fpga_top.{self.wireName} => {otherIO.moduleName}.{otherIO.name}")
+                    # driver.mux.addInfo(otherIO.moduleName)
+                    # driver.mux.addInfo(otherIO.name)
     
     def __str__(self):
         if len(self.connections) >= 2:

@@ -45,7 +45,7 @@ def getModules(baseDir, bitstreamFile) -> dict[str, Module]:
             elif 'mem_ble4_out_0' in node.path:
                 node.setMuxDescription("lut ff config")
             else:
-                node.setMuxDescription("clb lut input configuration")
+                node.setMuxDescription("lut input config")
 
         modules[topModuleName].addNode(node)
         
