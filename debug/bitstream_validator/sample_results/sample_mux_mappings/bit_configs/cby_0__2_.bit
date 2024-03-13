@@ -1,0 +1,11 @@
+cby_0__2_:
+	(cby_0__2_/mem_right_ipin_7 : [0, 0, 0, 0] ())
+	(cby_0__2_/mem_right_ipin_6 : [0, 0, 1, 0] ())
+	(cby_0__2_/mem_right_ipin_5 : [0, 0, 0, 0] ())
+	(cby_0__2_/mem_right_ipin_4 : [0, 0, 0, 0] ())
+	(cby_0__2_/mem_right_ipin_3 : [0, 0, 0, 0] ())
+	(cby_0__2_/mem_right_ipin_2 : [0, 1, 1, 0] ())
+	(cby_0__2_/mem_right_ipin_1 : [0, 0, 0, 0] ())
+	(cby_0__2_/mem_right_ipin_0 : [0, 0, 0, 0] ())
+	(cby_0__2_/mem_left_ipin_1 : [1, 0, 0, 0] ())
+	(cby_0__2_/mem_left_ipin_0 : [1, 0, 0, 0] ())

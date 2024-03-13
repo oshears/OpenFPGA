@@ -1,0 +1,12 @@
+cbx_1__2_:
+	(cbx_1__2_/mem_top_ipin_2 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_top_ipin_1 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_top_ipin_0 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_bottom_ipin_7 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_bottom_ipin_6 : [0, 1, 1, 0] ())
+	(cbx_1__2_/mem_bottom_ipin_5 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_bottom_ipin_4 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_bottom_ipin_3 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_bottom_ipin_2 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_bottom_ipin_1 : [0, 0, 0, 0] ())
+	(cbx_1__2_/mem_bottom_ipin_0 : [0, 0, 0, 0] ())

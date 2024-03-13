@@ -1,0 +1,9 @@
+chany_bottom_in,20,input
+chany_top_in,20,input
+chany_bottom_out,20,output
+chany_top_out,20,output
+right_grid_left_width_0_height_0_subtile_0__pin_I_3_,1,output
+right_grid_left_width_0_height_0_subtile_0__pin_I_7_,1,output
+left_grid_right_width_0_height_0_subtile_0__pin_I_1_,1,output
+left_grid_right_width_0_height_0_subtile_0__pin_I_5_,1,output
+left_grid_right_width_0_height_0_subtile_0__pin_I_9_,1,output
