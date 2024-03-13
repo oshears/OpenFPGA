@@ -3,10 +3,11 @@ from module_pkg.fpga_top_parse import *
 from module_pkg.map_muxes import *
 from module_pkg.parse_verilog_modules import *
 from module_pkg.get_bitstream_modules import *
+from module_pkg.follow_route import *
 from typing import List, Union
 
 def displayRoutes(modules:Union[str, Module]):
-    fh = open(f"{baseDir}/debug/bitstream_validator/outRoutes.txt","w+")
+    fh = open(f"./debug/bitstream_validator/results/outRoutes.txt","w+")
     for modName, mod in modules.items():
         fh.write(f"{modName}\n")
         for io in mod.io.values():
@@ -22,7 +23,7 @@ def getPrevPorts(root:IO,outFile,level=0) -> List[IO]:
     if not root.hasPrevIO() and "GPIO_PAD" not in root.name:
         outFile.write(level*'\t' + 'ERROR: REACHED A DEADEND TRACING BACK TO FPGA IN PIN!!!\n')
 
-    prevPorts = []    
+    prevPorts:List[IO] = []    
     for prevIO in root.prevIO:
         prevPorts += getPrevPorts(prevIO, outFile, level + 1)
 
@@ -33,7 +34,7 @@ def getPrevPorts(root:IO,outFile,level=0) -> List[IO]:
 
 def tracePaths(modules:Union[str, Module]):
     
-    startPorts = []
+    startPorts:List[IO] = []
 
     # get the FPGA output pins to trace from
     for module in modules.values():
@@ -46,7 +47,7 @@ def tracePaths(modules:Union[str, Module]):
     # recursively get the paths to the input pin of the FPGA
     # paths = []
 
-    fh = open(f"{baseDir}/debug/bitstream_validator/tracedPaths.txt","w+")
+    fh = open(f"./debug/bitstream_validator/results/tracedPaths.txt","w+")
     for startPort in startPorts:
 
         paths = getPrevPorts(startPort,fh)
@@ -121,7 +122,7 @@ def printMuxPaths(root:IO, outFile, level=1):
             
 def printDeadEnds(modules:Union[str, Module]):
 
-    fh = open(f"{baseDir}/debug/bitstream_validator/deadEnds.txt","w+")
+    fh = open(f"./debug/bitstream_validator/results/deadEnds.txt","w+")
 
     for module in modules.values():
         # for port in module.io.values():
@@ -182,7 +183,7 @@ def genNewBitstreams(modules):
     
     bitCount = 0
 
-    fh = open("/home/oshears/Documents/openfpga/OpenFPGA/debug/bitstream_validator/out.csv","w+")
+    fh = open("/home/oshears/Documents/openfpga/OpenFPGA/debug/bitstream_validator/results/out.csv","w+")
     for moduleName in module_order:
         module:Module = modules[moduleName]
 
@@ -208,7 +209,8 @@ def genNewBitstreams(modules):
 if __name__ == "__main__":
 
     baseDir = "/home/oshears/Documents/openfpga/OpenFPGA"
-    resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run003/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    # resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run003/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis/latest/k4_N4_tileable_40nm_new/fpga_design/MIN_ROUTE_CHAN_WIDTH"
     bitstreamFile = f"{resultsPath}/fabric_independent_bitstream.xml"
 
     modules:dict[str, Module] = getModules(baseDir, bitstreamFile)
@@ -232,3 +234,5 @@ if __name__ == "__main__":
     printDeadEnds(modules)
 
     genNewBitstreams(modules)
+
+    follow_route(modules)

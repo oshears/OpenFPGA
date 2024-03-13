@@ -1,5 +1,5 @@
 # design #: 00001
-# num luts #: 16
+# num luts #: 1
 autoidx 140
 attribute \top 1
 module \fpga_design

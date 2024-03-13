@@ -258,7 +258,7 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                             modules[moduleName].io[translatedInput].mux = newNode
                                             modules[moduleName].io[translatedOutput].mux = newNode
                                     
-                                    # all other non-CLB cases
+                                    # all other non-CLB cases (SB Muxes, CB Muxes)
                                     else:
                                         # map the input that the mux is configured to select to...
                                         modules[moduleName].mapIO(fixedMuxLine[2+muxChoice],fixedMuxLine[-1])
@@ -269,7 +269,8 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                         # associate ports with their muxes
                                         modules[moduleName].io[fixedMuxLine[2+muxChoice]].mux = newNode
                                         modules[moduleName].io[fixedMuxLine[-1]].mux = newNode
-                                        
+
+                                # if muxChoice was not configured (i.e., mux not configured)
                                 else:
                                     if ("".join(map(str,node.values)) != len(newNode.values) * "0"):
                                         print("Routing node was not defaulted but still returned CONST1")
