@@ -239,7 +239,7 @@ class MuxTreeSize8Node(RoutingNode):
                 else:
                     return 2
             else:
-                if self.values[3]:
+                if self.values[2]:
                     return 3
                 else: 
                     return 4
