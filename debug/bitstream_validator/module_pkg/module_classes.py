@@ -95,6 +95,9 @@ class IO:
             outputString += ")"
 
         return outputString
+
+    def getFullName(self):
+        return f"{self.moduleName}.{self.name}"
     
     def addNextIO(self, nextIO, connectsDirectlyToNext:bool=False):
         self.nextIO.append(nextIO)

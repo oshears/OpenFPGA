@@ -4,7 +4,7 @@ from . import *
 from .module_classes import *
 
 
-def follow_route(modules:Union[str, Module]):
+def follow_route_for(modules:Union[str, Module]):
 
     fh = open("./debug/bitstream_validator/results/follow.route","w")
 

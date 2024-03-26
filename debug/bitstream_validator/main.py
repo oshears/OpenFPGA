@@ -4,6 +4,8 @@ from module_pkg.map_muxes import *
 from module_pkg.parse_verilog_modules import *
 from module_pkg.get_bitstream_modules import *
 from module_pkg.follow_route import *
+from module_pkg.graph_json import *
+from module_pkg.trace_paths import *
 from typing import List, Union
 
 def displayRoutes(modules:Union[str, Module]):
@@ -13,51 +15,6 @@ def displayRoutes(modules:Union[str, Module]):
         for io in mod.io.values():
             if io.nextIO != None:
                 fh.write(f"\t{io}\n")
-    fh.close()
-
-def getPrevPorts(root:IO,outFile,level=0) -> List[IO]:
-
-    # print(level*'\t' + root.__str__()) 
-    outFile.write(level*'\t' + root.__str__() + '\n')
-
-    if not root.hasPrevIO() and "GPIO_PAD" not in root.name:
-        outFile.write(level*'\t' + 'ERROR: REACHED A DEADEND TRACING BACK TO FPGA IN PIN!!!\n')
-
-    prevPorts:List[IO] = []    
-    for prevIO in root.prevIO:
-        prevPorts += getPrevPorts(prevIO, outFile, level + 1)
-
-    # prevPorts = prevPorts + [root]
-
-    
-    return prevPorts
-
-def tracePaths(modules:Union[str, Module]):
-    
-    startPorts:List[IO] = []
-
-    # get the FPGA output pins to trace from
-    for module in modules.values():
-        if "grid_io" in module.name:
-            for port in module.io.values():
-                if port.direction == "output" and not port.hasNextIO():
-                    startPorts.append(port)
-
-
-    # recursively get the paths to the input pin of the FPGA
-    # paths = []
-
-    fh = open(f"./debug/bitstream_validator/results/tracedPaths.txt","w+")
-    for startPort in startPorts:
-
-        paths = getPrevPorts(startPort,fh)
-
-        # for point in path:
-        #     print(point)
-        # print("========================")
-        
-        # paths.append(path)
-    
     fh.close()
 
 
@@ -241,4 +198,4 @@ if __name__ == "__main__":
 
     genNewBitstreams(modules)
 
-    follow_route(modules)
+    follow_route_for(modules)
