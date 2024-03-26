@@ -1,0 +1,33 @@
+# import sys
+# sys.path.append('/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/scripts')
+
+from architecture_generator.copy_bitstreams import *
+from architecture_generator.gen_designs import *
+from architecture_generator.task_config import *
+
+import os
+
+# from openfpga_flow.scripts.run_fpga_task.py
+# from run_fpga_task import main
+
+
+
+if __name__ == "__main__":
+    # generate_il_designs()
+    # write_task_config()
+    # run_task_config()
+
+
+    cmd = "python"
+    cmd += "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/scripts/run_fpga_task.py"
+    cmd += "openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis"
+    cmd += "--maxthreads 10"
+    # cmd += "--debug"
+    result = os.system(cmd)
+
+    if result != 0:
+        print("THE TEST FAILED!")
+
+
+    # copy_bitstreams()
+    
