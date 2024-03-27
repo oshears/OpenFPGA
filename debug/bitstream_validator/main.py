@@ -6,16 +6,9 @@ from module_pkg.get_bitstream_modules import *
 from module_pkg.follow_route import *
 from module_pkg.graph_json import *
 from module_pkg.trace_paths import *
-from typing import List, Union
-
-def displayRoutes(modules:Union[str, Module]):
-    fh = open(f"./debug/bitstream_validator/results/outRoutes.txt","w+")
-    for modName, mod in modules.items():
-        fh.write(f"{modName}\n")
-        for io in mod.io.values():
-            if io.nextIO != None:
-                fh.write(f"\t{io}\n")
-    fh.close()
+from module_pkg.dead_ends import *
+from module_pkg.display_routes import *
+from module_pkg.generate_annotated_bitstream import *
 
 
 # def hasSinglePathPreceedingMux(root:IO, outFile):
@@ -61,113 +54,6 @@ def displayRoutes(modules:Union[str, Module]):
 #             if hasSinglePathPreceedingMux(root, outFile):
 #                 outFile.write(f"L={pathLength}, {root.prevIO[0]}\n")
 
-def hasSink(root:IO):
-    
-    for nextIO in root.nextIO:
-        if hasSink(nextIO):
-            return True
-            
-    if not root.hasNextIO() and ("GPIO_PAD" in root.name):
-        return True
-    
-    return False
-
-def printMuxPaths(root:IO, outFile, level=1):
-    outFile.write(level*"\t" + f"{root}\n")
-    for nextIO in root.nextIO:
-        printMuxPaths(nextIO, outFile, level + 1)
-            
-def printDeadEnds(modules:Union[str, Module]):
-
-    fh = open(f"./debug/bitstream_validator/results/deadEnds.txt","w+")
-
-    for module in modules.values():
-        # for port in module.io.values():
-        for mux in module.nodes:
-            # if not port.hasNextIO() and not port.hasPrevIO():
-            #     fh.write(f"{port}\n")
-            # if port.hasNextIO():
-            #     fh.write(f"{port}\n")
-            # if port.hasPrevIO():
-            #     fh.write(f"{port}\n")
-            
-            # skip IO Pads
-            # reportHasSink(port,fh)
-            if mux.hasConfigBits() and mux.muxOutput != None and (not hasSink(mux.muxOutput)):
-                fh.write(f"{mux}\n")
-                printMuxPaths(mux.muxOutput, fh)
-            
-            
-    fh.close();
-
-def genNewBitstreams(modules):
-    module_order = [
-        "grid_io_bottom_1__0_",
-        "grid_io_bottom_2__0_",
-        "grid_io_right_3__1_",
-        "grid_io_right_3__2_",
-        "sb_2__2_",
-        "cbx_2__2_",
-        "grid_io_top_2__3_",
-        "sb_1__2_",
-        "cbx_1__2_",
-        "grid_io_top_1__3_",
-        "sb_0__2_",
-        "sb_0__1_",
-        "cby_0__2_",
-        "grid_io_left_0__2_",
-        "sb_0__0_",
-        "cby_0__1_",
-        "grid_io_left_0__1_",
-        "sb_1__0_",
-        "cbx_1__0_",
-        "cby_1__1_",
-        "grid_clb_1__1_",
-        "sb_2__0_",
-        "cbx_2__0_",
-        "cby_2__1_",
-        "grid_clb_2__1_",
-        "sb_2__1_",
-        "cbx_2__1_",
-        "cby_2__2_",
-        "grid_clb_2__2_",
-        "sb_1__1_",
-        "cbx_1__1_",
-        "cby_1__2_",
-        "grid_clb_1__2_"
-    ]
-    module_order.reverse()
-    
-    bitCount = 0
-
-    fh = open("/home/oshears/Documents/openfpga/OpenFPGA/debug/bitstream_validator/results/out.csv","w+")
-
-    fh.write("bit index,bit value,module,name,type,path,description,sinks\n")
-    for moduleName in module_order:
-        module:Module = modules[moduleName]
-
-        # for mux in module.nodes:
-        for muxIdx in range(len(module.nodes)-1,-1,-1):
-            mux:RoutingNode = module.nodes[muxIdx]
-            bitLine = ""
-            bitLine += f"{moduleName},"
-            bitLine += f"{mux.name},"
-            bitLine += f"{mux.type},"
-            bitLine += f"{mux.path},"
-            bitLine += f"{mux.desc},"
-
-            # for bitIdx in range(len(mux.values)-1,-1,-1):
-            for bitIdx in range(len(mux.values)):
-                
-                # this tells us where the results of this mux go (sinks)
-                # tells us what (sinks) does this mux drive
-                muxDrives = ",".join(mux.sinks) if mux.sinks is not None else "not specified"
-
-                fh.write(f"{bitCount}," + f"{mux.values[bitIdx]}," + bitLine + f"{muxDrives}" + "\n")
-
-                bitCount += 1
-    
-    fh.close()
 
 if __name__ == "__main__":
 
@@ -196,6 +82,7 @@ if __name__ == "__main__":
     # print dead ends
     printDeadEnds(modules)
 
+    # create a .csv file with bit annotations
     genNewBitstreams(modules)
 
-    follow_route_for(modules)
+    # follow_route_for(modules)

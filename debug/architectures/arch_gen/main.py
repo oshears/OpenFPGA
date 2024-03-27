@@ -17,16 +17,18 @@ if __name__ == "__main__":
     # write_task_config()
     # run_task_config()
 
-
-    cmd = "python"
-    cmd += "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/scripts/run_fpga_task.py"
-    cmd += "openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis"
-    cmd += "--maxthreads 10"
+    # python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis --maxthreads 10
+    cmd = ""
+    cmd += "cd /home/oshears/Documents/openfpga/OpenFPGA/ && bash openfpga.sh"
+    cmd += "python3 openfpga_flow/scripts/run_fpga_task.py "
+    cmd += "openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis "
+    # cmd += "--maxthreads 10 "
     # cmd += "--debug"
-    result = os.system(cmd)
 
-    if result != 0:
-        print("THE TEST FAILED!")
+    # NOTE: Do I need to run open_fpga.sh before launching this task?
+    os.system(cmd)
+    # if result != 0:
+    #     print("THE TEST FAILED!")
 
 
     # copy_bitstreams()

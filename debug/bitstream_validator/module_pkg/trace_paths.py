@@ -1,43 +1,8 @@
+from module_pkg import *
 from module_pkg.module_classes import *
 from typing import List, Union
 
 import json
-
-module_order = [
-    "grid_io_bottom_1__0_",
-    "grid_io_bottom_2__0_",
-    "grid_io_right_3__1_",
-    "grid_io_right_3__2_",
-    "sb_2__2_",
-    "cbx_2__2_",
-    "grid_io_top_2__3_",
-    "sb_1__2_",
-    "cbx_1__2_",
-    "grid_io_top_1__3_",
-    "sb_0__2_",
-    "sb_0__1_",
-    "cby_0__2_",
-    "grid_io_left_0__2_",
-    "sb_0__0_",
-    "cby_0__1_",
-    "grid_io_left_0__1_",
-    "sb_1__0_",
-    "cbx_1__0_",
-    "cby_1__1_",
-    "grid_clb_1__1_",
-    "sb_2__0_",
-    "cbx_2__0_",
-    "cby_2__1_",
-    "grid_clb_2__1_",
-    "sb_2__1_",
-    "cbx_2__1_",
-    "cby_2__2_",
-    "grid_clb_2__2_",
-    "sb_1__1_",
-    "cbx_1__1_",
-    "cby_1__2_",
-    "grid_clb_1__2_"
-]
 
 def getPrevPorts(root:IO, outFile, level=0, paths_dict=None, index=[0,0], path_option = 0) -> List[IO]:
 
