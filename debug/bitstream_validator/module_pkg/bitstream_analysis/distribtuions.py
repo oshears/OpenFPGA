@@ -1,4 +1,5 @@
 import glob
+from typing import List
 import xml
 import xml.etree
 # import xml.etree.ElementTree
@@ -25,6 +26,7 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
     config_tracker = {}
     
     bit_index_config_elem_mapping = []
+    modules = []
 
     with open(bit_reference) as bit_reference_csv_fh:
         bit_reference_reader = csv.DictReader(bit_reference_csv_fh)
@@ -37,6 +39,9 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
             
             config_elem = row['path'].replace("/",".") #f"{row['module']}.{row['name']}"
             bit_index_config_elem_mapping.append(config_elem)
+            
+            if row['module'] not in modules:
+                modules.append(row['module'])
             
             if curr_config_elem == None:
                 curr_config_elem = config_elem # f"{row['module']}.{row['name']}"
@@ -82,8 +87,8 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
     for bitstream in bitstreams:
         
         bitstream_index += 1
-        if bitstream_index % (total_bitstreams / 10) == 0:
-            print(f"\t{bitstream_index * 100 / total_bitstreams}%\t({bitstream_index} / {total_bitstreams})")
+        if bitstream_index % (total_bitstreams // 10) == 0:
+            print(f"\t{bitstream_index * 100 // total_bitstreams}%\t({bitstream_index} / {total_bitstreams})")
         
         HEADER_OFFSET = 5
         with open(bitstream, "r+") as bitstream_fh:
@@ -120,10 +125,18 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
             
     print(f"Done collecting bitstream data in: {time.time() - startTime}s")
     
+    # https://docs.python.org/3/library/pickle.html
+    # Export Dictionary to PKL file
+    
     print("Writing JSON Files")   
     startTime = time.time()
     write_json_files(config_tracker, out_file_path)
     print(f"Done writing json files in: {time.time() - startTime}s")
+    
+    print("Writing Module JSON Files")   
+    startTime = time.time()
+    write_module_json_files(config_tracker, modules, out_file_path)
+    print(f"Done writing module json files in: {time.time() - startTime}s")
     
     print("Writing Visualizations")
     startTime = time.time()
@@ -141,12 +154,34 @@ def write_json_files(config_distributions:str, out_file_path:str):
     for config_element in config_distributions.keys():
         
         current_config_elem_index += 1
-        if current_config_elem_index % (total_config_elems/10) == 0:
-            print(f"\t{current_config_elem_index * 100 / total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
+        if current_config_elem_index % (total_config_elems//10) == 0:
+            print(f"\t{current_config_elem_index * 100 // total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
             
         # output_json_string = json.encoder.JSONEncoder().encode(config_distributions[config_element])
         with open(f"{out_file_path}/{config_element}.json","w+") as out_file:
             json.dump(config_distributions[config_element], out_file, ensure_ascii=False, indent=4)
+
+def write_module_json_files(config_distributions:str, modules:List[str], out_file_path:str):
+    # write json
+    total_config_elems = len(modules)
+    current_config_elem_index = 0
+    
+    for module in modules:
+        
+        current_config_elem_index += 1
+        if current_config_elem_index % (total_config_elems//10) == 0:
+            print(f"\t{current_config_elem_index * 100 / total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
+        
+        module_config_elements = {}
+        with open(f"{out_file_path}/modules/{module}.json", "w+") as out_file:
+            
+            for config_element in config_distributions.keys():
+                if module in config_element:
+                    module_config_elements[config_element] = config_distributions[config_element]
+                    # output_json_string = json.encoder.JSONEncoder().encode(config_distributions[config_element])
+            
+            json.dump(module_config_elements, out_file, ensure_ascii=False, indent=4)
+    
 
 def write_visualizations(config_distributions:str, out_file_path:str):
     
@@ -157,7 +192,7 @@ def write_visualizations(config_distributions:str, out_file_path:str):
         
         current_config_elem_index += 1
         if current_config_elem_index % (total_config_elems/20) == 0:
-            print(f"\t{current_config_elem_index * 100 / total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
+            print(f"\t{current_config_elem_index * 100 // total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
         
         configurations = []
         counts = []
@@ -173,5 +208,7 @@ def write_visualizations(config_distributions:str, out_file_path:str):
         plt.xlabel("Configuratons")
         plt.ylabel("Number of Times Configured")
         plt.title(f"Distribution of Configurations for {config_element}")
-        plt.ylim((0,1702))
+        plt.ylim((0,20000))
         plt.savefig(f"{out_file_path}/{config_element}.png")
+        
+        plt.close()
