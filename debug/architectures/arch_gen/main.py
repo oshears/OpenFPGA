@@ -23,7 +23,7 @@ if __name__ == "__main__":
     cmd += "python3 openfpga_flow/scripts/run_fpga_task.py "
     cmd += "openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis "
     # cmd += "--maxthreads 10 "
-    # cmd += "--debug"
+    # cmd += "--debug "
 
     # NOTE: Do I need to run open_fpga.sh before launching this task?
     os.system(cmd)

@@ -10,6 +10,7 @@ from module_pkg.dead_ends import *
 from module_pkg.display_routes import *
 from module_pkg.generate_annotated_bitstream import *
 
+from module_pkg.bitstream_analysis.distribtuions import *
 
 # def hasSinglePathPreceedingMux(root:IO, outFile):
     
@@ -55,8 +56,7 @@ from module_pkg.generate_annotated_bitstream import *
 #                 outFile.write(f"L={pathLength}, {root.prevIO[0]}\n")
 
 
-if __name__ == "__main__":
-
+def standard_flow():
     baseDir = "/home/oshears/Documents/openfpga/OpenFPGA"
     # resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run003/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
     resultsPath = f"{baseDir}/openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis/latest/k4_N4_tileable_40nm_new/fpga_design/MIN_ROUTE_CHAN_WIDTH"
@@ -86,3 +86,12 @@ if __name__ == "__main__":
     genNewBitstreams(modules)
 
     # follow_route_for(modules)
+
+def get_distributions():
+    # get_config_distributions("/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run003/k4_N4_tileable_40nm_new")
+    get_config_distributions(bit_reference="debug/bitstream_validator/sample_results/out.csv", bitstreams_path="/home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/random_bitstreams_16LUT", out_file_path="debug/bitstream_validator/results/bit_config_distributions") 
+
+
+if __name__ == "__main__":
+    get_distributions()
+    
