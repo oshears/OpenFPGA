@@ -15,6 +15,7 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
     
     # number of bits in bitstream
     BITSTREAM_LENGTH = 1702
+    NUM_CONFIGS = 20000
     
     # setup config_tracker
     config_tracker = {}
@@ -96,14 +97,14 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
                         prev_config_elem = curr_config_elem
                         curr_config_bits = bitstream_lines[HEADER_OFFSET + bit_index].strip()
                         
-                        
+    # caculate distribution percentages
+    for config_elem in config_tracker.keys():
+        for config in config_tracker[config_elem]['configs']:
+            config['percentage'] = (100 * config['count']) / NUM_CONFIGS       
         
     # write json
     for config_element in config_tracker.keys():
         output_json_string = json.encoder.JSONEncoder().encode(config_tracker[config_element])
-        out_file_name = config_element.replace('/',".")
-        with open(f"{out_file_path}/{out_file_name}.json", "w+") as out_file:
-            out_file.write(output_json_string)
-        
-        
-    
+        formatted_output_json_string = json.dumps(output_json_string,indent=4)
+        with open(f"{out_file_path}/{config_element}.json", "w+") as out_file:
+            out_file.write(formatted_output_json_string)
