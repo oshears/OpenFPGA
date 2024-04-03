@@ -4,7 +4,9 @@ import xml.etree
 # import xml.etree.ElementTree
 import csv
 import json
-
+import numpy as np
+import matplotlib.pyplot as plt
+import time
 
 def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_path:str = "config_distributions.csv"):
     '''
@@ -18,6 +20,8 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
     NUM_CONFIGS = 20000
     
     # setup config_tracker
+    print("Setting up Configuration Distribution Dictionary")
+    startTime = time.time()
     config_tracker = {}
     
     bit_index_config_elem_mapping = []
@@ -31,17 +35,17 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
         
         for row in bit_reference_reader:
             
-            config_elem_name = f"{row['module']}.{row['name']}"
-            bit_index_config_elem_mapping.append(config_elem_name)
+            config_elem = row['path'].replace("/",".") #f"{row['module']}.{row['name']}"
+            bit_index_config_elem_mapping.append(config_elem)
             
             if curr_config_elem == None:
-                curr_config_elem = f"{row['module']}.{row['name']}"
+                curr_config_elem = config_elem # f"{row['module']}.{row['name']}"
                 config_tracker[curr_config_elem] = {"configs" : [], 'name':row['name'], 'type':row['type'], 'module':row['module'], 'path':row['path'], 'description':row['description']}
                 num_bits_for_config_elem = 1
             else:
                 
                 ## if current bit belongs to previous config element
-                if curr_config_elem == f"{row['module']}.{row['name']}":
+                if curr_config_elem == config_elem: #f"{row['module']}.{row['name']}":
                     num_bits_for_config_elem += 1
                     
                 else:
@@ -52,7 +56,7 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
                         config_tracker[curr_config_elem]['configs'].append({"bits":config_string, "count" : 0, "percentage":0})
                     
                     # setup new config element
-                    curr_config_elem = f"{row['module']}.{row['name']}"
+                    curr_config_elem = config_elem # f"{row['module']}.{row['name']}"
                     config_tracker[curr_config_elem] = {"configs" : [], 'name':row['name'], 'type':row['type'], 'module':row['module'], 'path':row['path'], 'description':row['description']}
                     num_bits_for_config_elem = 1
                     
@@ -66,11 +70,20 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
             
             bit_index += 1
         
-        
-                
+    
+    print(f"Done setting up the dictionary in {time.time() - startTime}s")
+    
+    print("Parsing bitstream data")
+    startTime = time.time()
 
     # parse configs from bitstreams
+    total_bitstreams = len(bitstreams)
+    bitstream_index = 0
     for bitstream in bitstreams:
+        
+        bitstream_index += 1
+        if bitstream_index % (total_bitstreams / 10) == 0:
+            print(f"\t{bitstream_index * 100 / total_bitstreams}%\t({bitstream_index} / {total_bitstreams})")
         
         HEADER_OFFSET = 5
         with open(bitstream, "r+") as bitstream_fh:
@@ -94,6 +107,9 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
                     else:
                         config_tracker[prev_config_elem]['configs'][int(curr_config_bits,2)]["count"] += 1
                         
+                        if config_tracker[prev_config_elem]['configs'][int(curr_config_bits,2)]["count"] > 20000:
+                            raise Exception("too many configs!")
+                        
                         prev_config_elem = curr_config_elem
                         curr_config_bits = bitstream_lines[HEADER_OFFSET + bit_index].strip()
                         
@@ -101,10 +117,61 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
     for config_elem in config_tracker.keys():
         for config in config_tracker[config_elem]['configs']:
             config['percentage'] = (100 * config['count']) / NUM_CONFIGS       
+            
+    print(f"Done collecting bitstream data in: {time.time() - startTime}s")
+    
+    print("Writing JSON Files")   
+    startTime = time.time()
+    write_json_files(config_tracker, out_file_path)
+    print(f"Done writing json files in: {time.time() - startTime}s")
+    
+    print("Writing Visualizations")
+    startTime = time.time()
+    write_visualizations(config_tracker, out_file_path)
+    print(f"Done writing visualizations in: {time.time() - startTime}s")
         
+    
+
+def write_json_files(config_distributions:str, out_file_path:str):
+    
     # write json
-    for config_element in config_tracker.keys():
-        output_json_string = json.encoder.JSONEncoder().encode(config_tracker[config_element])
-        formatted_output_json_string = json.dumps(output_json_string,indent=4)
-        with open(f"{out_file_path}/{config_element}.json", "w+") as out_file:
-            out_file.write(formatted_output_json_string)
+    total_config_elems = len(config_distributions.keys())
+    current_config_elem_index = 0
+    
+    for config_element in config_distributions.keys():
+        
+        current_config_elem_index += 1
+        if current_config_elem_index % (total_config_elems/10) == 0:
+            print(f"\t{current_config_elem_index * 100 / total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
+            
+        # output_json_string = json.encoder.JSONEncoder().encode(config_distributions[config_element])
+        with open(f"{out_file_path}/{config_element}.json","w+") as out_file:
+            json.dump(config_distributions[config_element], out_file, ensure_ascii=False, indent=4)
+
+def write_visualizations(config_distributions:str, out_file_path:str):
+    
+    total_config_elems = len(config_distributions.keys())
+    current_config_elem_index = 0
+    
+    for config_element in config_distributions.keys():
+        
+        current_config_elem_index += 1
+        if current_config_elem_index % (total_config_elems/20) == 0:
+            print(f"\t{current_config_elem_index * 100 / total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
+        
+        configurations = []
+        counts = []
+        
+        for config in config_distributions[config_element]['configs']:
+            configurations.append(config['bits'])
+            counts.append(config['count'])
+        
+        fig = plt.figure(figsize=(10,5))
+        
+        plt.bar(configurations,counts,width=0.4)
+        
+        plt.xlabel("Configuratons")
+        plt.ylabel("Number of Times Configured")
+        plt.title(f"Distribution of Configurations for {config_element}")
+        plt.ylim((0,1702))
+        plt.savefig(f"{out_file_path}/{config_element}.png")
