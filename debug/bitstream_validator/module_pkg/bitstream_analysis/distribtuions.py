@@ -111,9 +111,10 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
                         curr_config_bits += bitstream_lines[HEADER_OFFSET + bit_index].strip()
                         
                     else:
-                        config_tracker[prev_config_elem]['configs'][int(curr_config_bits,2)]["count"] += 1
+                        config_index = int(curr_config_bits,2)
+                        config_tracker[prev_config_elem]['configs'][config_index]["count"] += 1
                         
-                        if config_tracker[prev_config_elem]['configs'][int(curr_config_bits,2)]["count"] > 20000:
+                        if config_tracker[prev_config_elem]['configs'][config_index]["count"] > 20000:
                             raise Exception("too many configs!")
                         
                         prev_config_elem = curr_config_elem
@@ -126,7 +127,9 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
             
     print(f"Done collecting bitstream data in: {time.time() - startTime}s")
     
-    dump_config_distributions(config_tracker,out_file_path)
+    return config_tracker
+    
+    # dump_config_distributions(config_tracker, out_file_path)
     
     # https://docs.python.org/3/library/pickle.html
     # Export Dictionary to PKL file
@@ -201,7 +204,8 @@ def write_visualization(config_element:str, config_distribution:Dict, out_file_p
         configurations.append(config['bits'])
         counts.append(config['count'])
     
-    fig = plt.figure(figsize=(30,5))
+    # plt_width = 2 * len(counts)
+    fig = plt.figure(figsize=(10,5))
     
     plt.bar(configurations,counts,width=0.4)
     
@@ -209,6 +213,29 @@ def write_visualization(config_element:str, config_distribution:Dict, out_file_p
     plt.ylabel("Number of Times Configured")
     plt.title(f"Distribution of Configurations for {config_element}")
     plt.ylim((0,20000))
+    plt.savefig(f"{out_file_path}/{config_element}.png")
+    
+    plt.close()
+
+def write_line_graph(config_element:str, config_distribution:Dict, out_file_path:str):
+    configurations = []
+    counts = []
+        
+    for config in config_distribution['configs']:
+        configurations.append(config['bits'])
+        counts.append(config['count'])
+    
+    # plt_width = 2 * len(counts)
+    fig = plt.figure(figsize=(10,5))
+    
+    # plt.bar(configurations,counts,width=0.4)
+    # plt.scatter(list(range(len(counts))), counts)
+    plt.plot(counts)
+    
+    plt.xlabel("Configuratons")
+    plt.ylabel("Number of Times Configured")
+    plt.title(f"Distribution of Configurations for {config_element}")
+    plt.ylim((0,max(counts)))
     plt.savefig(f"{out_file_path}/{config_element}.png")
     
     plt.close()
@@ -224,4 +251,7 @@ def write_visualizations(config_distributions:str, out_file_path:str):
         if current_config_elem_index % (total_config_elems/20) == 0:
             print(f"\t{current_config_elem_index * 100 // total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
         
-        write_visualization(config_element, config_distributions[config_element], out_file_path)
+        if len(config_distributions[config_element]['configs']) < 64:
+            write_visualization(config_element, config_distributions[config_element], out_file_path)
+        else:
+            write_line_graph(config_element, config_distributions[config_element], out_file_path)
