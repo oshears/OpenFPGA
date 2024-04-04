@@ -89,9 +89,21 @@ def standard_flow():
 
 def get_distributions():
     # get_config_distributions("/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs/run003/k4_N4_tileable_40nm_new")
-    get_config_distributions(bit_reference="debug/bitstream_validator/sample_results/out.csv", bitstreams_path="/home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/random_bitstreams_16LUT", out_file_path="debug/bitstream_validator/results/bit_config_distributions") 
+    bit_reference="debug/bitstream_validator/sample_results/out.csv"
+    bitstreams_path="/home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/random_bitstreams_16LUT"
+    out_file_path="debug/bitstream_validator/results/bit_config_distributions"
+    get_config_distributions(bit_reference, bitstreams_path, out_file_path) 
 
+def load_distributions():
+    pkl_file = "debug/bitstream_validator/results/bit_config_distributions/config_distributions.pkl"
+    config_distributions = load_config_distributions(pkl_file)
+    
+    config_elem = "grid_clb_1__2_.logical_tile_clb_mode_clb__0.logical_tile_clb_mode_default__fle_0.logical_tile_clb_mode_default__fle_mode_n1_lut4__ble4_0.logical_tile_clb_mode_default__fle_mode_n1_lut4__ble4_mode_default__lut4_0.lut4_DFF_mem"
+    config_distribution = config_distributions[config_elem]
+    out_file_path = "debug/bitstream_validator/results/bit_config_distributions/graphs"
+    
+    write_visualization(config_elem, config_distribution, out_file_path)
 
 if __name__ == "__main__":
-    get_distributions()
-    
+    # get_distributions()
+    load_distributions()

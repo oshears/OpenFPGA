@@ -1,5 +1,5 @@
 import glob
-from typing import List
+from typing import Dict, List
 import xml
 import xml.etree
 # import xml.etree.ElementTree
@@ -8,6 +8,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import pickle
 
 def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_path:str = "config_distributions.csv"):
     '''
@@ -125,27 +126,36 @@ def get_config_distributions(bit_reference:str, bitstreams_path:str, out_file_pa
             
     print(f"Done collecting bitstream data in: {time.time() - startTime}s")
     
+    dump_config_distributions(config_tracker,out_file_path)
+    
     # https://docs.python.org/3/library/pickle.html
     # Export Dictionary to PKL file
+
+    # print("Writing JSON Files")   
+    # startTime = time.time()
+    # write_json_files(config_tracker, out_file_path)
+    # print(f"Done writing json files in: {time.time() - startTime}s")
     
-    print("Writing JSON Files")   
-    startTime = time.time()
-    write_json_files(config_tracker, out_file_path)
-    print(f"Done writing json files in: {time.time() - startTime}s")
+    # print("Writing Module JSON Files")   
+    # startTime = time.time()
+    # write_module_json_files(config_tracker, modules, out_file_path)
+    # print(f"Done writing module json files in: {time.time() - startTime}s")
     
-    print("Writing Module JSON Files")   
-    startTime = time.time()
-    write_module_json_files(config_tracker, modules, out_file_path)
-    print(f"Done writing module json files in: {time.time() - startTime}s")
-    
-    print("Writing Visualizations")
-    startTime = time.time()
-    write_visualizations(config_tracker, out_file_path)
-    print(f"Done writing visualizations in: {time.time() - startTime}s")
-        
+    # print("Writing Visualizations")
+    # startTime = time.time()
+    # write_visualizations(config_tracker, out_file_path)
+    # print(f"Done writing visualizations in: {time.time() - startTime}s")
+
+def dump_config_distributions(config_distributions:Dict, out_file_path:str):
+    with open(out_file_path + "/config_distributions.pkl","wb") as out_file:
+        pickle.dump(config_distributions,out_file)
+
+def load_config_distributions(load_file_path:str) -> Dict: 
+    with open(load_file_path,"rb") as in_file:
+        return pickle.load(in_file)
     
 
-def write_json_files(config_distributions:str, out_file_path:str):
+def write_json_files(config_distributions:Dict, out_file_path:str):
     
     # write json
     total_config_elems = len(config_distributions.keys())
@@ -161,7 +171,7 @@ def write_json_files(config_distributions:str, out_file_path:str):
         with open(f"{out_file_path}/{config_element}.json","w+") as out_file:
             json.dump(config_distributions[config_element], out_file, ensure_ascii=False, indent=4)
 
-def write_module_json_files(config_distributions:str, modules:List[str], out_file_path:str):
+def write_module_json_files(config_distributions:Dict, modules:List[str], out_file_path:str):
     # write json
     total_config_elems = len(modules)
     current_config_elem_index = 0
@@ -181,7 +191,27 @@ def write_module_json_files(config_distributions:str, modules:List[str], out_fil
                     # output_json_string = json.encoder.JSONEncoder().encode(config_distributions[config_element])
             
             json.dump(module_config_elements, out_file, ensure_ascii=False, indent=4)
+
+def write_visualization(config_element:str, config_distribution:Dict, out_file_path:str):
     
+    configurations = []
+    counts = []
+        
+    for config in config_distribution['configs']:
+        configurations.append(config['bits'])
+        counts.append(config['count'])
+    
+    fig = plt.figure(figsize=(30,5))
+    
+    plt.bar(configurations,counts,width=0.4)
+    
+    plt.xlabel("Configuratons")
+    plt.ylabel("Number of Times Configured")
+    plt.title(f"Distribution of Configurations for {config_element}")
+    plt.ylim((0,20000))
+    plt.savefig(f"{out_file_path}/{config_element}.png")
+    
+    plt.close()
 
 def write_visualizations(config_distributions:str, out_file_path:str):
     
@@ -194,21 +224,4 @@ def write_visualizations(config_distributions:str, out_file_path:str):
         if current_config_elem_index % (total_config_elems/20) == 0:
             print(f"\t{current_config_elem_index * 100 // total_config_elems}%\t({current_config_elem_index} / {total_config_elems})")
         
-        configurations = []
-        counts = []
-        
-        for config in config_distributions[config_element]['configs']:
-            configurations.append(config['bits'])
-            counts.append(config['count'])
-        
-        fig = plt.figure(figsize=(10,5))
-        
-        plt.bar(configurations,counts,width=0.4)
-        
-        plt.xlabel("Configuratons")
-        plt.ylabel("Number of Times Configured")
-        plt.title(f"Distribution of Configurations for {config_element}")
-        plt.ylim((0,20000))
-        plt.savefig(f"{out_file_path}/{config_element}.png")
-        
-        plt.close()
+        write_visualization(config_element, config_distributions[config_element], out_file_path)
