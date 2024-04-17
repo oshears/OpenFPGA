@@ -6,7 +6,7 @@
         "**/.git",
         "**/env",
         "**/.github",
-        "**/.vscode",
+        // "**/.vscode",
         "**/.svn",
         "**/.hg",
         "**/CVS",

@@ -37,6 +37,16 @@ def getPrevPorts(root:IO, outFile, level=0, paths_dict=None, index=[0,0], path_o
     
     return prevPorts
 
+
+def traceIoPath(node_queue:List[IO], fh, paths_dict=None, index=[0,0]):
+
+    while len(node_queue) != 0:
+        currIO = node_queue.pop(0)
+
+        for prevIO in currIO.prevIO:
+            node_queue.append(prevIO)
+
+
 def tracePaths(modules:Union[str, Module]):
     
     startPorts:List[IO] = []
@@ -57,7 +67,11 @@ def tracePaths(modules:Union[str, Module]):
     paths_dict = {"nodes":[],"links":[]}
     index = [0,0]
     for startPort in startPorts:
-        paths = getPrevPorts(startPort,fh,paths_dict=paths_dict,index=index)
+        paths = getPrevPorts(startPort, fh, paths_dict=paths_dict, index=index)
+
+        node_queue = [startPort]
+        traceIoPath(node_queue, fh, paths_dict=paths_dict, index=index)
+
         index[1] += 1
 
         # for point in path:

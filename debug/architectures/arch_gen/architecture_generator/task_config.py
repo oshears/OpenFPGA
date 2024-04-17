@@ -1,9 +1,11 @@
 # write task.conf
 
-def write_task_config():
-    NUM_DESIGNS=20000
+def write_task_config(NUM_DESIGNS=20000, device_size="2x2", device_arch="k4_N4_40nm_cc_openfpga.xml",outdir="random_designs", bench_dir="debug/architectures/arch_gen/results/random_designs"):
+    # NUM_DESIGNS=20000
 
-    fh = open(f"./results/random_designs/task.conf","w+")
+    # os.mkdir(f"{design_dir}/{index_str}")
+
+    fh = open(f"debug/architectures/arch_gen/results/{outdir}/task.conf","w+")
 
 
     fh.write(f"[GENERAL]\n")
@@ -17,10 +19,10 @@ def write_task_config():
     fh.write(f"\n")
 
     fh.write(f"[OpenFPGA_SHELL]\n")
-    fh.write(f"openfpga_shell_template=${{PATH:OPENFPGA_PATH}}/openfpga_flow/openfpga_shell_scripts/write_full_testbench_example_script.openfpga\n")
-    fh.write(f"openfpga_arch_file=${{PATH:OPENFPGA_PATH}}/openfpga_flow/openfpga_arch/k4_N4_40nm_cc_openfpga.xml\n")
+    fh.write(f"openfpga_shell_template=${{PATH:OPENFPGA_PATH}}/openfpga_flow/openfpga_shell_scripts/write_full_testbench_example_script_1.openfpga\n")
+    fh.write(f"openfpga_arch_file=${{PATH:OPENFPGA_PATH}}/openfpga_flow/openfpga_arch/{device_arch}\n")
     fh.write(f"openfpga_sim_setting_file=${{PATH:OPENFPGA_PATH}}/openfpga_flow/openfpga_simulation_settings/auto_sim_openfpga.xml\n")
-    fh.write(f"openfpga_vpr_device_layout=--device 2x2 --route_chan_width 40\n")
+    fh.write(f"openfpga_vpr_device_layout=--device {device_size} --route_chan_width 40\n")
     fh.write(f"openfpga_fast_configuration=\n")
     fh.write(f"\n")
 
@@ -31,11 +33,12 @@ def write_task_config():
     fh.write(f"[BENCHMARKS]\n")
     for i in range(NUM_DESIGNS):
         design_num = f"{(i+1)}".zfill(5)
-        fh.write(f"bench{i}=${{PATH:OPENFPGA_PATH}}/debug/architectures/arch_gen/results/random_designs/{design_num}/design.v\n")
+        fh.write(f"bench{i}=${{PATH:OPENFPGA_PATH}}/{bench_dir}/{design_num}/design.il\n")
     fh.write(f"\n")
 
     fh.write(f"[SYNTHESIS_PARAM]\n")
     fh.write(f"bench_read_verilog_options_common = -nolatches\n")
+    fh.write(f"bench_yosys_common=${{PATH:OPENFPGA_PATH}}/openfpga_flow/misc/ys_tmpl_yosys_vpr_flow_1.ys\n")
     fh.write(f"\n")
 
     for i in range(NUM_DESIGNS):

@@ -2,8 +2,8 @@ import random
 import os
 import shutil
 
-def generate_il_designs():
-    design_dir = "./results/random_designs"
+def generate_il_designs(NUM_DESIGNS=20000, NUM_LUTS = 16, outdir="fpga_2x2_clb"):
+    design_dir = f"./debug/architectures/arch_gen/results/{outdir}"
 
     shutil.rmtree(design_dir)
     os.mkdir(design_dir)
@@ -15,16 +15,15 @@ def generate_il_designs():
             self.idx = idx
             self.dir = dir
 
-    for i in range(20000):
+    for i in range(NUM_DESIGNS):
 
         index = i
         index_str = f"{(index + 1)}".zfill(5)
         
         os.mkdir(f"{design_dir}/{index_str}")
-        # fh = open(f"{design_dir}/{index_str}/design.il","w+")
-        fh = open(f"{design_dir}/{index_str}/design.v","w+")
+        fh = open(f"{design_dir}/{index_str}/design.il","w+")
+        # fh = open(f"{design_dir}/{index_str}/design.v","w+")
 
-        NUM_LUTS = 16
         NUM_LUT_INPUTS = 4
         NUM_INPUTS = 4
 
