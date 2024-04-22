@@ -1,11 +1,9 @@
 # write task.conf
 
-def write_task_config(NUM_DESIGNS=20000, device_size="2x2", device_arch="k4_N4_40nm_cc_openfpga.xml",outdir="random_designs", bench_dir="debug/architectures/arch_gen/results/random_designs"):
+def write_task_config(outdir, design_dir, NUM_DESIGNS=20000, device_size="2x2", device_arch="k4_N4_40nm_cc_openfpga.xml"):
     # NUM_DESIGNS=20000
 
-    # os.mkdir(f"{design_dir}/{index_str}")
-
-    fh = open(f"debug/architectures/arch_gen/results/{outdir}/task.conf","w+")
+    fh = open(f"{outdir}/task.conf","w+")
 
 
     fh.write(f"[GENERAL]\n")
@@ -33,7 +31,7 @@ def write_task_config(NUM_DESIGNS=20000, device_size="2x2", device_arch="k4_N4_4
     fh.write(f"[BENCHMARKS]\n")
     for i in range(NUM_DESIGNS):
         design_num = f"{(i+1)}".zfill(5)
-        fh.write(f"bench{i}=${{PATH:OPENFPGA_PATH}}/{bench_dir}/{design_num}/design.il\n")
+        fh.write(f"bench{i}=${{PATH:OPENFPGA_PATH}}/{design_dir}/{design_num}/design.il\n")
     fh.write(f"\n")
 
     fh.write(f"[SYNTHESIS_PARAM]\n")
@@ -44,7 +42,7 @@ def write_task_config(NUM_DESIGNS=20000, device_size="2x2", device_arch="k4_N4_4
     for i in range(NUM_DESIGNS):
         design_num = f"{(i+1)}".zfill(4)
         fh.write(f"bench{i}_top=fpga_design\n")
-        fh.write(f"bench{i}_chan_width=16\n")
+        fh.write(f"bench{i}_chan_width=40\n")
     fh.write(f"\n")
 
     fh.write(f"[SCRIPT_PARAM_MIN_ROUTE_CHAN_WIDTH]\n")

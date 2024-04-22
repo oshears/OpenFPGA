@@ -2,53 +2,51 @@
 # sys.path.append('/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/scripts')
 
 from architecture_generator.copy_bitstreams import *
-from architecture_generator.gen_designs import *
-from architecture_generator.task_config import *
+from architecture_generator.make_designs import *
+from architecture_generator.make_task_config import *
 from architecture_generator.config_chain_extraction import *
 from architecture_generator.bit_labeller import *
 from architecture_generator.window_maker import *
 
+import shutil
 import os
+import pathlib
 
 # from openfpga_flow.scripts.run_fpga_task.py
 # from run_fpga_task import main
 
-def gen_4x4_designs(NUM_DESIGNS=5000):
-    # generate_il_designs(5000, NUM_LUTS=64, outdir="fpga_4x4_clb")
+def gen_4x4_designs(NUM_DESIGNS=20000):
+    # make_il_designs(5000, NUM_LUTS=64, outdir="fpga_4x4_clb")
     # write_task_config(5000,"4x4", device_arch="")
 
-
     NUM_LUTS = 64
-    # generate_il_designs(NUM_DESIGNS, NUM_LUTS=NUM_LUTS, outdir="fpga_4x4_clb")
-    write_task_config(NUM_DESIGNS, "4x4", outdir="fpga_4x4_clb/designs", bench_dir="debug/architectures/arch_gen/results/fpga_4x4_clb/_info")
-    shutil.copy("debug/architectures/arch_gen/results/fpga_4x4_clb/_info/task.conf","openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/config/task.conf")
+    SIZE= "4x4"
+
+    results_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb"
+    if os.path.exists(results_dir):
+        shutil.rmtree(results_dir)
+
+    design_dir = f"{results_dir}/designs"
+    info_dir = f"{results_dir}/_info"
+
+    pathlib.Path(design_dir).mkdir(parents=True, exist_ok=False)
+    pathlib.Path(info_dir).mkdir(parents=True, exist_ok=False)
+
+    make_tiered_il_designs(design_dir, NUM_DESIGNS, NUM_LUTS=NUM_LUTS)
+    
+    write_task_config(info_dir, design_dir, NUM_DESIGNS, SIZE)
+
+    shutil.copy(f"{info_dir}/task.conf", f"openfpga_flow/tasks/basic_tests/0_debug_task/fpga_{SIZE}_clb/config/task.conf")
 
     
     # run_task_config()
 
     # python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/0_debug_task/fpga_4x4_clb
 
-
-def analyze_4x4_designs():
-    # design_source_dir = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
-    # design_source_dir = "openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
-    design_source_dir = "openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis/latest/k4_N4_tileable_40nm_new/fpga_design/MIN_ROUTE_CHAN_WIDTH"
-
-    top_level = f"{design_source_dir}/SRC/fpga_top.v"
-    # results = config_chain_extraction(top_level)
-    moduleConfigOrder = config_chain_extraction(top_level)
-
-    xml_bitstream = f"{design_source_dir}/fabric_independent_bitstream.xml"
-    module_info = bitstream_label(moduleConfigOrder, xml_bitstream)
-
-    module_layout_grid = get_module_layout_grid(module_info, 4)
-    device_visualization(module_layout_grid, module_info, moduleConfigOrder)
-
-    # for module in module_info:
-    #     print(f"{module} : {len(module_info[module])}")
-
+def write_windows(module_info):
+    windows = []
     # Top Left Window
-    target_modules = [
+    windows.append([
         "sb_0__4_",
         "sb_1__4_",
         "sb_2__4_",
@@ -74,11 +72,10 @@ def analyze_4x4_designs():
         "cby_1__3_",
         "cby_2__4_",
         "cby_2__3_",
-    ]
-    make_windows(module_info,target_modules)
+    ])
 
     # Top Right Window
-    target_modules = [
+    windows.append([
         "sb_2__4_",
         "sb_3__4_",
         "sb_4__4_",
@@ -104,11 +101,10 @@ def analyze_4x4_designs():
         "cby_3__3_",
         "cby_4__4_",
         "cby_4__3_",
-    ]
-    make_windows(module_info,target_modules)
+    ])
 
     # Bottom Left Window
-    target_modules = [
+    windows.append([
         "sb_0__0_",
         "sb_0__1_",
         "sb_0__2_",
@@ -134,11 +130,10 @@ def analyze_4x4_designs():
         "cby_1__2_",
         "cby_2__1_",
         "cby_2__2_",
-    ]
-    make_windows(module_info,target_modules)
+    ])
 
     # Bottom Right Window
-    target_modules = [
+    windows.append([
         "sb_2__0_",
         "sb_2__1_",
         "sb_2__2_",
@@ -164,8 +159,30 @@ def analyze_4x4_designs():
         "cby_3__2_",
         "cby_4__1_",
         "cby_4__2_",
-    ]
-    make_windows(module_info,target_modules)
+    ])
+    
+    for window_modules in windows:
+        make_windows(module_info, window_modules)
+
+def analyze_4x4_designs():
+    # design_source_dir = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    # design_source_dir = "openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    design_source_dir = "openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis/latest/k4_N4_tileable_40nm_new/fpga_design/MIN_ROUTE_CHAN_WIDTH"
+
+    top_level = f"{design_source_dir}/SRC/fpga_top.v"
+    # results = config_chain_extraction(top_level)
+    moduleConfigOrder = config_chain_extraction(top_level)
+
+    xml_bitstream = f"{design_source_dir}/fabric_independent_bitstream.xml"
+    module_info = bitstream_label(moduleConfigOrder, xml_bitstream)
+
+    module_layout_grid = get_module_layout_grid(module_info, 4)
+    device_visualization(module_layout_grid, module_info, moduleConfigOrder)
+
+    # for module in module_info:
+    #     print(f"{module} : {len(module_info[module])}")
+    write_windows(module_info)
+    
 
 if __name__ == "__main__":
     # generate_il_designs()
@@ -173,8 +190,8 @@ if __name__ == "__main__":
     # run_task_config(NUM_DESIGNS=5000)
 
     # 1. Doubled Device Size, Simialar Connections
-    # gen_4x4_designs()
-    analyze_4x4_designs()
+    gen_4x4_designs()
+    # analyze_4x4_designs()
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)
