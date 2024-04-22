@@ -40,8 +40,10 @@ def analyze_4x4_designs():
     xml_bitstream = f"{design_source_dir}/fabric_independent_bitstream.xml"
     module_info = bitstream_label(moduleConfigOrder, xml_bitstream)
 
-    for module in module_info:
-        print(f"{module} : {len(module_info[module])}")
+    device_visualization(module_info,moduleConfigOrder)
+
+    # for module in module_info:
+    #     print(f"{module} : {len(module_info[module])}")
 
     # Top Left Window
     target_modules = [
