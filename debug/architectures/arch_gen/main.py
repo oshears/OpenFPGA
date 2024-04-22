@@ -19,8 +19,8 @@ def gen_4x4_designs(NUM_DESIGNS=5000):
 
     NUM_LUTS = 64
     # generate_il_designs(NUM_DESIGNS, NUM_LUTS=NUM_LUTS, outdir="fpga_4x4_clb")
-    write_task_config(NUM_DESIGNS, "4x4", outdir="fpga_4x4_clb", bench_dir="debug/architectures/arch_gen/results/fpga_4x4_clb")
-    shutil.copy("debug/architectures/arch_gen/results/fpga_4x4_clb/task.conf","openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/config/task.conf")
+    write_task_config(NUM_DESIGNS, "4x4", outdir="fpga_4x4_clb/designs", bench_dir="debug/architectures/arch_gen/results/fpga_4x4_clb/_info")
+    shutil.copy("debug/architectures/arch_gen/results/fpga_4x4_clb/_info/task.conf","openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/config/task.conf")
 
     
     # run_task_config()
@@ -29,10 +29,15 @@ def gen_4x4_designs(NUM_DESIGNS=5000):
 
 
 def analyze_4x4_designs():
-    top_level = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v"
+    # design_source_dir = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    design_source_dir = "openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+
+    top_level = f"{design_source_dir}/SRC/fpga_top.v"
     # results = config_chain_extraction(top_level)
     moduleConfigOrder = config_chain_extraction(top_level)
-    bitstream_label(moduleConfigOrder,None)
+
+    xml_bitstream = f"{design_source_dir}/fabric_independent_bitstream.xml"
+    bitstream_label(moduleConfigOrder, xml_bitstream)
 
 if __name__ == "__main__":
     # generate_il_designs()

@@ -21,13 +21,13 @@ def config_chain_extraction(top_level_file:str):
             if f".ccff_head({lastConfigChainNet})" in line:
             # if x := re.search(r"\t\t.ccff_head\((\S+)\);", line):
                 moduleOrder.append(currentModule)
-                print(currentModule)
-                print("\t Head: " + lastConfigChainNet)
+                # print(currentModule)
+                # print("\t Head: " + lastConfigChainNet)
                 findTail = True
 
             if findTail:
                 if x := re.search(r"\t\t.ccff_tail\((\S+)\)\);", line):
-                    print("\t Tail:" + lastConfigChainNet)
+                    # print("\t Tail:" + lastConfigChainNet)
                     lastConfigChainNet = x.group(1)
                     break
     
