@@ -31,6 +31,8 @@ def config_chain_extraction(top_level_file:str):
                     lastConfigChainNet = x.group(1)
                     break
     
+    moduleOrder.reverse()
+
     return moduleOrder
 
 

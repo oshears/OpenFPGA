@@ -4,6 +4,8 @@
 from architecture_generator.copy_bitstreams import *
 from architecture_generator.gen_designs import *
 from architecture_generator.task_config import *
+from architecture_generator.config_chain_extraction import *
+from architecture_generator.bit_labeller import *
 
 import os
 
@@ -19,11 +21,18 @@ def gen_4x4_designs(NUM_DESIGNS=5000):
     # generate_il_designs(NUM_DESIGNS, NUM_LUTS=NUM_LUTS, outdir="fpga_4x4_clb")
     write_task_config(NUM_DESIGNS, "4x4", outdir="fpga_4x4_clb", bench_dir="debug/architectures/arch_gen/results/fpga_4x4_clb")
     shutil.copy("debug/architectures/arch_gen/results/fpga_4x4_clb/task.conf","openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/config/task.conf")
+
     
     # run_task_config()
 
     # python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/0_debug_task/fpga_4x4_clb
 
+
+def analyze_4x4_designs():
+    top_level = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v"
+    # results = config_chain_extraction(top_level)
+    moduleConfigOrder = config_chain_extraction(top_level)
+    bitstream_label(moduleConfigOrder,None)
 
 if __name__ == "__main__":
     # generate_il_designs()
@@ -31,7 +40,8 @@ if __name__ == "__main__":
     # run_task_config(NUM_DESIGNS=5000)
 
     # 1. Doubled Device Size, Simialar Connections
-    gen_4x4_designs()
+    # gen_4x4_designs()
+    analyze_4x4_designs()
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)
