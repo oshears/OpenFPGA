@@ -16,8 +16,6 @@ import pathlib
 # from run_fpga_task import main
 
 def gen_4x4_designs(NUM_DESIGNS=20000):
-    # make_il_designs(5000, NUM_LUTS=64, outdir="fpga_4x4_clb")
-    # write_task_config(5000,"4x4", device_arch="")
 
     NUM_LUTS = 64
     SIZE= "4x4"
