@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 import math
 import re
 
-def bitstream_label(module_order, xml_bitstream_filename):
+def bitstream_label(module_order, xml_bitstream_filename, out_dir):
     # suffix = "_16LUT"
     # bitstreamPath = f"../random_bitstreams{suffix}/"
 
@@ -62,7 +62,8 @@ def bitstream_label(module_order, xml_bitstream_filename):
 
     ## write modules and routing nodes out to file
     # fh = open(f"../random_bitstreams{suffix}/{file}.csv","w+")
-    fh = open(f"debug/architectures/arch_gen/results/fpga_4x4_clb/_info/bit_labels.csv","w+")
+    # fh = open(f"debug/architectures/arch_gen/results/fpga_4x4_clb/_info/bit_labels.csv","w+")
+    fh = open(f"{out_dir}/bit_labels.csv","w+")
     fh.write("module_name,path,name,bit\n")
     for module in module_order:
         for i in range(len(modules[module])-1,-1,-1):
@@ -75,8 +76,8 @@ def bitstream_label(module_order, xml_bitstream_filename):
 # bitstream = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_independent_bitstream.xml"
 # bitstream_label(bitstream)
 
-def get_module_layout_grid(module_info, device_horizontal_clb_count=4):
-    device_width = int(math.sqrt(len(module_info) - device_horizontal_clb_count*device_horizontal_clb_count))
+def get_module_layout_grid(module_info, device_vertical_clb_count=4):
+    device_width = int(math.sqrt(len(module_info) - device_vertical_clb_count*4))
     # print(device_width)
     # locations = [ [None] * device_width] * device_width
     layout = []

@@ -5,4 +5,4 @@ def make_windows(module_info, target_modules):
         # print(f"\t{target_module} : {len(module_info[target_module])}")
         bit_count += len(module_info[target_module])
     
-    # print(bit_count)
+    print(bit_count)
