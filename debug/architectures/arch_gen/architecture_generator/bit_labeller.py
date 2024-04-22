@@ -75,16 +75,15 @@ def bitstream_label(module_order, xml_bitstream_filename):
 # bitstream = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_independent_bitstream.xml"
 # bitstream_label(bitstream)
 
-def device_visualization(module_info, module_config_order:List=None):
-    device_width = int(math.sqrt(len(module_info) - 4*4))
+def get_module_layout_grid(module_info, device_horizontal_clb_count=4):
+    device_width = int(math.sqrt(len(module_info) - device_horizontal_clb_count*device_horizontal_clb_count))
     # print(device_width)
-
     # locations = [ [None] * device_width] * device_width
-    locations = []
+    layout = []
     for x in range(device_width):
-        locations.append([])
+        layout.append([])
         for y in range(device_width):
-            locations[x].append(None)
+            layout[x].append(None)
 
     for module_name in module_info.keys():
 
@@ -95,25 +94,30 @@ def device_visualization(module_info, module_config_order:List=None):
             sb_x = int(x.group(1))
             sb_y = int(x.group(2))
 
-            locations[sb_x * 2][sb_y * 2] = module_name
+            layout[sb_x * 2][sb_y * 2] = module_name
         
         if x := re.search('grid_clb_(\d+)__(\d+)_',module_name):
             clb_x = int(x.group(1))
             clb_y = int(x.group(2))
 
-            locations[clb_x * 2 - 1][clb_y * 2 - 1] = module_name
+            layout[clb_x * 2 - 1][clb_y * 2 - 1] = module_name
         
         if x := re.search('cbx_(\d+)__(\d+)_',module_name):
             cbx_x = int(x.group(1))
             cbx_y = int(x.group(2))
 
-            locations[cbx_x * 2 - 1][cbx_y * 2] = module_name
+            layout[cbx_x * 2 - 1][cbx_y * 2] = module_name
         
         if x := re.search('cby_(\d+)__(\d+)_',module_name):
             cby_x = int(x.group(1))
             cby_y = int(x.group(2))
 
-            locations[cby_x * 2][cby_y * 2 - 1] = module_name
+            layout[cby_x * 2][cby_y * 2 - 1] = module_name
+    
+    return layout
+
+def device_visualization(locations, module_info, module_config_order):
+    device_width = len(locations)
 
     # print module names
     print("Module Arrangement")

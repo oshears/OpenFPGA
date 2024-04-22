@@ -31,7 +31,8 @@ def gen_4x4_designs(NUM_DESIGNS=5000):
 
 def analyze_4x4_designs():
     # design_source_dir = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
-    design_source_dir = "openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    # design_source_dir = "openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    design_source_dir = "openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis/latest/k4_N4_tileable_40nm_new/fpga_design/MIN_ROUTE_CHAN_WIDTH"
 
     top_level = f"{design_source_dir}/SRC/fpga_top.v"
     # results = config_chain_extraction(top_level)
@@ -40,7 +41,8 @@ def analyze_4x4_designs():
     xml_bitstream = f"{design_source_dir}/fabric_independent_bitstream.xml"
     module_info = bitstream_label(moduleConfigOrder, xml_bitstream)
 
-    device_visualization(module_info,moduleConfigOrder)
+    module_layout_grid = get_module_layout_grid(module_info, 4)
+    device_visualization(module_layout_grid, module_info, moduleConfigOrder)
 
     # for module in module_info:
     #     print(f"{module} : {len(module_info[module])}")
