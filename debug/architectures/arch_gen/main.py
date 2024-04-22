@@ -6,6 +6,7 @@ from architecture_generator.gen_designs import *
 from architecture_generator.task_config import *
 from architecture_generator.config_chain_extraction import *
 from architecture_generator.bit_labeller import *
+from architecture_generator.window_maker import *
 
 import os
 
@@ -37,7 +38,130 @@ def analyze_4x4_designs():
     moduleConfigOrder = config_chain_extraction(top_level)
 
     xml_bitstream = f"{design_source_dir}/fabric_independent_bitstream.xml"
-    bitstream_label(moduleConfigOrder, xml_bitstream)
+    module_info = bitstream_label(moduleConfigOrder, xml_bitstream)
+
+    for module in module_info:
+        print(f"{module} : {len(module_info[module])}")
+
+    # Top Left Window
+    target_modules = [
+        "sb_0__4_",
+        "sb_1__4_",
+        "sb_2__4_",
+        "sb_0__3_",
+        "sb_1__3_",
+        "sb_2__3_",
+        "sb_0__2_",
+        "sb_1__2_",
+        "sb_2__2_",
+        "grid_clb_1__3_",
+        "grid_clb_1__4_",
+        "grid_clb_2__3_",
+        "grid_clb_2__4_",
+        "cbx_1__4_",
+        "cbx_1__3_",
+        "cbx_1__2_",
+        "cbx_2__4_",
+        "cbx_2__3_",
+        "cbx_2__2_",
+        "cby_0__4_",
+        "cby_0__3_",
+        "cby_1__4_",
+        "cby_1__3_",
+        "cby_2__4_",
+        "cby_2__3_",
+    ]
+    make_windows(module_info,target_modules)
+
+    # Top Right Window
+    target_modules = [
+        "sb_2__4_",
+        "sb_3__4_",
+        "sb_4__4_",
+        "sb_2__3_",
+        "sb_3__3_",
+        "sb_4__3_",
+        "sb_2__2_",
+        "sb_3__2_",
+        "sb_4__2_",
+        "grid_clb_3__3_",
+        "grid_clb_3__4_",
+        "grid_clb_4__3_",
+        "grid_clb_4__4_",
+        "cbx_4__4_",
+        "cbx_4__3_",
+        "cbx_4__2_",
+        "cbx_3__4_",
+        "cbx_3__3_",
+        "cbx_3__2_",
+        "cby_2__4_",
+        "cby_2__3_",
+        "cby_3__4_",
+        "cby_3__3_",
+        "cby_4__4_",
+        "cby_4__3_",
+    ]
+    make_windows(module_info,target_modules)
+
+    # Bottom Left Window
+    target_modules = [
+        "sb_0__0_",
+        "sb_0__1_",
+        "sb_0__2_",
+        "sb_1__0_",
+        "sb_1__1_",
+        "sb_1__2_",
+        "sb_2__0_",
+        "sb_2__1_",
+        "sb_2__2_",
+        "grid_clb_1__1_",
+        "grid_clb_1__2_",
+        "grid_clb_2__1_",
+        "grid_clb_2__2_",
+        "cbx_1__0_",
+        "cbx_2__0_",
+        "cbx_1__1_",
+        "cbx_2__1_",
+        "cbx_1__2_",
+        "cbx_2__2_",
+        "cby_0__1_",
+        "cby_0__2_",
+        "cby_1__1_",
+        "cby_1__2_",
+        "cby_2__1_",
+        "cby_2__2_",
+    ]
+    make_windows(module_info,target_modules)
+
+    # Bottom Right Window
+    target_modules = [
+        "sb_2__0_",
+        "sb_2__1_",
+        "sb_2__2_",
+        "sb_3__0_",
+        "sb_3__1_",
+        "sb_3__2_",
+        "sb_4__0_",
+        "sb_4__1_",
+        "sb_4__2_",
+        "grid_clb_3__1_",
+        "grid_clb_3__2_",
+        "grid_clb_4__1_",
+        "grid_clb_4__2_",
+        "cbx_3__0_",
+        "cbx_4__0_",
+        "cbx_3__1_",
+        "cbx_4__1_",
+        "cbx_3__2_",
+        "cbx_4__2_",
+        "cby_2__1_",
+        "cby_2__2_",
+        "cby_3__1_",
+        "cby_3__2_",
+        "cby_4__1_",
+        "cby_4__2_",
+    ]
+    make_windows(module_info,target_modules)
 
 if __name__ == "__main__":
     # generate_il_designs()
