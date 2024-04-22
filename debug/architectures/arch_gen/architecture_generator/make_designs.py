@@ -115,7 +115,7 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         lut_count = 0
 
         for lut_idx in range(NUM_LUTS - len(tier_outputs[-1])):
-            fh.write(f"  wire \\lut_out_{lut_idx}\n")
+            fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
             lut_count += 1
 
         for lut_idx in range(len(tier_outputs[-1])):

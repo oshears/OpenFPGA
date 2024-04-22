@@ -116,8 +116,8 @@ if __name__ == "__main__":
     # gen_4x4_designs()
     # analyze_4x4_designs()
 
-    # gen_6x6_designs()
-    analyze_designs(VERTICAL_CLB_COUNT=6)
+    gen_6x6_designs()
+    # analyze_designs(VERTICAL_CLB_COUNT=6)
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)
