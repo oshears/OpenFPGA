@@ -7,6 +7,7 @@
 source /home/oshears/Documents/openfpga/OpenFPGA/openfpga.sh
 python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/generate_fabric
 python3 openfpga_flow/scripts/run_fpga_task.py fpga_verilog/adder/hard_adder
+python3 openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis --maxthreads=8 --debug
 ```
 
 ---
