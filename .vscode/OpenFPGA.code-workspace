@@ -1,0 +1,95 @@
+{
+	"folders": [
+		{
+			"name": "OpenFPGA",
+			"path": ".."
+		},
+		{
+			"path": "../openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/env": true,
+			"**/.github": true,
+			"**/.vscode": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/Thumbs.db": true,
+			"**/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs": true,
+			"**/debug/architectures/random_bitstreams": true,
+			"**/debug/architectures/random_bitstreams_16LUT": true,
+			"**/debug/architectures/random_bitstreams_xml": true,
+			"**/debug/architectures/arch_gen/results/random_designs": true,
+			"**/debug/architectures/arch_gen/results/bitstreams": true,
+			"cmake":true,
+			"build":true,
+			"docker":true,
+			"docs":true,
+			"libs":true,
+			"openfpga":true,
+			"dev":true,
+			"yosys":true,
+			"yosys-plugins":true,
+			"vtr-verilog-to-routing":true,
+			"tmp":true,
+		},
+		"files.watcherExclude": {
+			"**/.git": true,
+			"**/env": true,
+			"**/.github": true,
+			// "**/.vscode": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/Thumbs.db": true,
+			"**/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs": true,
+			"**/debug/architectures/random_bitstreams": true,
+			"**/debug/architectures/random_bitstreams_16LUT": true,
+			"**/debug/architectures/random_bitstreams_xml": true,
+			"**/debug/architectures/arch_gen/results/random_designs": true,
+			"**/debug/architectures/arch_gen/results/bitstreams": true
+		},
+		"todohighlight.keywords": [
+			{
+				"text": "DIRECT_WIRE",
+				"color": "cyan",
+				"backgroundColor": "rgba(255,255,0,0)",
+				"isWholeLine": false
+			},
+			{
+				"text": "ERROR",
+				"color": "red",
+				"backgroundColor": "rgba(255,255,0,0)",
+				"isWholeLine": false
+			}
+		],
+		"todohighlight.include": [
+			"**/*.txt"
+		]
+	},
+	// https://stackoverflow.com/questions/31702041/multiple-commands-tasks-with-visual-studio-code
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "copy results",
+				"type": "shell",
+				"command": "bash",
+				"group": {
+					"kind": "build",
+					"isDefault": true
+				},
+				"args":[
+					"",
+					"",
+					"",
+				]
+			}
+		]
+	}
+}

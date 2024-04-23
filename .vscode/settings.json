@@ -1,0 +1,57 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/env": true,
+        "**/.github": true,
+        "**/.vscode": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs": true,
+        "**/debug/architectures/random_bitstreams": true,
+        "**/debug/architectures/random_bitstreams_16LUT": true,
+        "**/debug/architectures/arch_gen/results/random_designs": true,
+        "**/debug/architectures/arch_gen/results/bitstreams": true
+    },
+    "files.watcherExclude": {
+        "**/.git": true,
+        "**/env": true,
+        "**/.github": true,
+        "**/.vscode": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/openfpga_flow/tasks/basic_tests/0_debug_task/random_designs": true,
+        "**/debug/architectures/random_bitstreams": true,
+        "**/debug/architectures/random_bitstreams_16LUT": true,
+        "**/debug/architectures/arch_gen/results/random_designs": true,
+        "**/debug/architectures/arch_gen/results/bitstreams": true
+    },
+    "todohighlight.keywords": [
+        {
+            "text":"DIRECT_WIRE",
+            "color":"cyan",
+            // "backgroundColor":"yellow",
+            "backgroundColor": "rgba(255,255,0,0)",
+            // "border":"1px solid red",
+            // "borderRadius":"2px",
+            "isWholeLine": false
+        },
+        {
+            "text":"ERROR",
+            "color":"red",
+            // "backgroundColor":"yellow",
+            "backgroundColor": "rgba(255,255,0,0)",
+            // "border":"1px solid red",
+            // "borderRadius":"2px",
+            "isWholeLine": false
+        },
+    ],
+    "todohighlight.include": [
+        "**/*.txt",
+    ]
+}
