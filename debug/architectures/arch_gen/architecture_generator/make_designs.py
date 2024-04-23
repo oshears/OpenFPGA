@@ -89,14 +89,6 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         NUM_LUT_INPUTS = 4
         NUM_INPUTS = 4
 
-
-
-        # fh.write(f"# design #: {index_str}\n")
-        fh.write(f"# num luts #: {NUM_LUTS}\n")
-        fh.write(f"autoidx 140\n")
-        fh.write(f"attribute \\top 1\n")
-        fh.write(f"module \\fpga_design\n")
-
         luts_remaining = NUM_LUTS
         tier_outputs = [[f"fpga_in_{i}" for i in range(NUM_INPUTS)]]
         lut_count = 0
@@ -109,6 +101,13 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
                 lut_count += 1
             tier_outputs.append(curr_tier)
 
+        # fh.write(f"# design #: {index_str}\n")
+        fh.write(f"# num luts #: {NUM_LUTS}\n")
+        fh.write(f"# LUT TIERS: " + "->".join([str(len(tier_outputs[i])) for i in range(len(tier_outputs))]) + "\n")
+        fh.write(f"autoidx 140\n")
+        fh.write(f"attribute \\top 1\n")
+        fh.write(f"module \\fpga_design\n")
+
         for lut_input_idx in range(NUM_INPUTS):
             fh.write(f"  wire input {lut_input_idx} \\fpga_in_{lut_input_idx}\n")
         
@@ -119,7 +118,7 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         lut_count = 0
 
         for lut_idx in range(NUM_LUTS - len(tier_outputs[-1])):
-            fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
+            fh.write(f"  wire {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
             fh.write(f"  attribute \keep 1\n")
             lut_count += 1
 

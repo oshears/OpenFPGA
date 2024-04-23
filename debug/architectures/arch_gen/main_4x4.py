@@ -52,13 +52,14 @@ def gen_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS=20000):
 def analyze_designs(VERTICAL_CLB_COUNT):
     # openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v
 
+    NUM_LUTS = VERTICAL_CLB_COUNT*VERTICAL_CLB_COUNT*4 - 4
     SIZE = f"{VERTICAL_CLB_COUNT}x{VERTICAL_CLB_COUNT}"
     results_dir = f"openfpga_flow/tasks/basic_tests/0_debug_task/fpga_{SIZE}_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
     output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb"
     info_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/_info"
     bitstreams_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/bitstreams"
 
-    make_readme(output_dir)
+
 
     top_level = f"{results_dir}/SRC/fpga_top.v"
     moduleConfigOrder = config_chain_extraction(top_level)
@@ -153,6 +154,9 @@ def analyze_designs(VERTICAL_CLB_COUNT):
                 fh.write(bit_string)
         
         fh.close()
+    
+    
+    make_readme(output_dir, NUM_LUTS, VERTICAL_CLB_COUNT, module_layout_grid, module_info, moduleConfigOrder, windows_4x4)
 
 
 
@@ -160,5 +164,5 @@ def analyze_designs(VERTICAL_CLB_COUNT):
     # copy_bitstreams(results_dir, bitstreams_output_dir, 20000)
 
 if __name__ == "__main__":
-    # gen_designs(4,20000)
-    analyze_designs(4)
+    gen_designs(4,20000)
+    # analyze_designs(4)
