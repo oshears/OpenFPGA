@@ -7,6 +7,7 @@ from architecture_generator.make_task_config import *
 from architecture_generator.config_chain_extraction import *
 from architecture_generator.bit_labeller import *
 from architecture_generator.window_maker import *
+from architecture_generator.make_readme import *
 
 from architecture_generator.windows_6x6 import *
 from architecture_generator.windows_4x4 import *
@@ -56,6 +57,8 @@ def analyze_designs(VERTICAL_CLB_COUNT):
     output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb"
     info_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/_info"
     bitstreams_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/bitstreams"
+
+    make_readme(output_dir)
 
     top_level = f"{results_dir}/SRC/fpga_top.v"
     moduleConfigOrder = config_chain_extraction(top_level)
@@ -157,5 +160,5 @@ def analyze_designs(VERTICAL_CLB_COUNT):
     # copy_bitstreams(results_dir, bitstreams_output_dir, 20000)
 
 if __name__ == "__main__":
-    gen_designs(4,20000)
-    # analyze_designs(4)
+    # gen_designs(4,20000)
+    analyze_designs(4)
