@@ -46,7 +46,7 @@ def gen_4x4_designs(NUM_DESIGNS=20000):
 
 def gen_6x6_designs(NUM_DESIGNS=1):
 
-    NUM_LUTS = 6*6*4
+    NUM_LUTS = 6*6*4 - 4
     SIZE= "6x6"
 
     results_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb"

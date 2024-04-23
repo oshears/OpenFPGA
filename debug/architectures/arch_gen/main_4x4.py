@@ -19,10 +19,11 @@ import glob
 # from openfpga_flow.scripts.run_fpga_task.py
 # from run_fpga_task import main
 
-def gen_4x4_designs(NUM_DESIGNS=20000):
+def gen_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS=20000):
 
-    NUM_LUTS = 4*4*4
-    SIZE= "4x4"
+    # Use all LUTs, but leave one CLB free
+    NUM_LUTS = VERTICAL_CLB_COUNT*VERTICAL_CLB_COUNT*4 - 4
+    SIZE= f"{VERTICAL_CLB_COUNT}x{VERTICAL_CLB_COUNT}"
 
     results_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb"
     if os.path.exists(results_dir):
@@ -156,4 +157,5 @@ def analyze_designs(VERTICAL_CLB_COUNT):
     # copy_bitstreams(results_dir, bitstreams_output_dir, 20000)
 
 if __name__ == "__main__":
-    analyze_designs(4)
+    gen_designs(4,20000)
+    # analyze_designs(4)

@@ -112,10 +112,15 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         for lut_input_idx in range(NUM_INPUTS):
             fh.write(f"  wire input {lut_input_idx} \\fpga_in_{lut_input_idx}\n")
         
+        # for lut_idx in range(NUM_LUTS):
+        #     fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
+        #     fh.write(f"  attribute \keep 1\n")
+
         lut_count = 0
 
         for lut_idx in range(NUM_LUTS - len(tier_outputs[-1])):
             fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
+            fh.write(f"  attribute \keep 1\n")
             lut_count += 1
 
         for lut_idx in range(len(tier_outputs[-1])):
@@ -150,6 +155,7 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
                 ## instantiate LUT
                 # fh.write(f"  cell $lut $abc$963$auto$blifparse.cc:525:parse_blif${964 + lut_idx}\n")
                 # fh.write(f"  cell $lut $abc$963$auto$blifparse.cc:525:parse_blif${lut_idx}\n")
+                fh.write(f"  attribute \keep 1\n")
                 fh.write(f"  cell $lut $abc$963$auto$blifparse.cc:525:parse_blif${lut_count}\n")
                 lut_string = ''.join(random.choice("01") for i in range(16))
                 fh.write(f"    parameter \LUT 16'{lut_string}\n")

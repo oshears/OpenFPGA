@@ -1,5 +1,5 @@
 windows_4x4 = []
-# Top Left Window
+# Top Left Window (0)
 windows_4x4.append([
     "sb_0__4_",
     "sb_1__4_",
@@ -28,7 +28,7 @@ windows_4x4.append([
     "cby_2__3_",
 ])
 
-# Top Right Window
+# Top Right Window (1)
 windows_4x4.append([
     "sb_2__4_",
     "sb_3__4_",
@@ -57,7 +57,7 @@ windows_4x4.append([
     "cby_4__3_",
 ])
 
-# Bottom Left Window
+# Bottom Left Window (2)
 windows_4x4.append([
     "sb_0__0_",
     "sb_0__1_",
@@ -86,7 +86,7 @@ windows_4x4.append([
     "cby_2__2_",
 ])
 
-# Bottom Right Window
+# Bottom Right Window (3)
 windows_4x4.append([
     "sb_2__0_",
     "sb_2__1_",

@@ -36,7 +36,7 @@ def write_task_config(outdir, design_dir, NUM_DESIGNS=20000, device_size="2x2", 
 
     fh.write(f"[SYNTHESIS_PARAM]\n")
     fh.write(f"bench_read_verilog_options_common = -nolatches\n")
-    fh.write(f"bench_yosys_common=${{PATH:OPENFPGA_PATH}}/openfpga_flow/misc/ys_tmpl_yosys_vpr_flow_1.ys\n")
+    fh.write(f"bench_yosys_common=${{PATH:OPENFPGA_PATH}}/openfpga_flow/misc/ys_tmpl_yosys_vpr_flow_2.ys\n")
     fh.write(f"\n")
 
     for i in range(NUM_DESIGNS):
