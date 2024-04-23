@@ -57,7 +57,7 @@
         <equivalent_sites>
           <site pb_type="clb"/>
         </equivalent_sites>
-        <input name="I" num_pins="10" equivalent="full"/>
+        <input name="I" num_pins="16" equivalent="full"/>
         <output name="O" num_pins="4" equivalent="none"/>
         <clock name="clk" num_pins="1"/>
         <fc in_type="frac" in_val="0.15" out_type="frac" out_val="0.10"/>
@@ -76,6 +76,13 @@
       <fill type="clb" priority="10"/>
     </fixed_layout>
     <fixed_layout name="4x4" width="6" height="6">
+      <!--Perimeter of 'io' blocks with 'EMPTY' blocks at corners-->
+      <perimeter type="io" priority="100"/>
+      <corners type="EMPTY" priority="101"/>
+      <!--Fill with 'clb'-->
+      <fill type="clb" priority="10"/>
+    </fixed_layout>
+    <fixed_layout name="6x6" width="8" height="8">
       <!--Perimeter of 'io' blocks with 'EMPTY' blocks at corners-->
       <perimeter type="io" priority="100"/>
       <corners type="EMPTY" priority="101"/>
@@ -208,7 +215,7 @@
 	   routing area up significantly, we estimate into the ~70% range. 
 	   -->
     <pb_type name="clb">
-      <input name="I" num_pins="10" equivalent="full"/>
+      <input name="I" num_pins="16" equivalent="full"/>
       <output name="O" num_pins="4" equivalent="none"/>
       <clock name="clk" num_pins="1"/>
       <!-- Describe basic logic element.  

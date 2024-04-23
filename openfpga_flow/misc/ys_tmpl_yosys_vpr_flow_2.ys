@@ -1,0 +1,8 @@
+# Yosys synthesis script for ${TOP_MODULE}
+# Read verilog files
+# read_ilang ${READ_VERILOG_OPTIONS} ${VERILOG_FILES}
+read_ilang ${VERILOG_FILES}
+
+write_blif ${OUTPUT_BLIF}
+write_json ${OUTPUT_BLIF}.json
+write_ilang ${OUTPUT_BLIF}.il

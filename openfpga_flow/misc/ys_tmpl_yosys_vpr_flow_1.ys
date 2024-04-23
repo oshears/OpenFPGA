@@ -10,24 +10,24 @@ techmap -D NO_LUT -map +/adff2dff.v
 
 # Synthesis
 flatten
-opt_expr
-opt_clean
+# opt_expr
+# opt_clean
 check
-opt -nodffe -nosdff
+# opt -nodffe -nosdff
 fsm
-opt -nodffe -nosdff
+# opt -nodffe -nosdff
 wreduce
 peepopt
-opt_clean
-opt -nodffe -nosdff
+# opt_clean
+# opt -nodffe -nosdff
 memory -nomap
-opt_clean
-opt -fast -full -nodffe -nosdff
+# opt_clean
+# opt -fast -full -nodffe -nosdff
 memory_map
-opt -full -nodffe -nosdff
+# opt -full -nodffe -nosdff
 techmap
-opt -fast -nodffe -nosdff
-clean
+# opt -fast -nodffe -nosdff
+# clean
 
 # LUT mapping
 abc -lut ${LUT_SIZE}
@@ -36,7 +36,7 @@ abc -lut ${LUT_SIZE}
 synth -run check
 
 # Clean and output blif
-opt_clean -purge
+# opt_clean -purge
 write_blif ${OUTPUT_BLIF}
 write_json ${OUTPUT_BLIF}.json
 write_ilang ${OUTPUT_BLIF}.il
