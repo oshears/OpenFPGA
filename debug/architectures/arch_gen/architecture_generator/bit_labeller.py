@@ -4,6 +4,13 @@ from xml.etree import ElementTree
 import math
 import re
 
+class Bit:
+    def __init__(self):
+        self.module = ""
+        self.node_path = ""
+        self.node_name = ""
+        self.value = ""
+
 def bitstream_label(module_order, xml_bitstream_filename, out_dir):
     # suffix = "_16LUT"
     # bitstreamPath = f"../random_bitstreams{suffix}/"
@@ -26,6 +33,7 @@ def bitstream_label(module_order, xml_bitstream_filename, out_dir):
     # iterate through all nodes with a bitstream child
     modules = {}
     module_info = {}
+    bit_mapping = []
     for configNode in root.findall(".//bitstream/.."): 
         topModuleName = configNode[0][1].attrib["name"]
         nodePath = "/".join([f"{configNode[0][i].attrib['name']}" for i in range(1,len(configNode[0]))])
@@ -68,10 +76,11 @@ def bitstream_label(module_order, xml_bitstream_filename, out_dir):
     for module in module_order:
         for i in range(len(modules[module])-1,-1,-1):
             fh.write(modules[module][i])
+            bit_mapping.append(module_info[module][i])
 
     fh.close()
 
-    return module_info
+    return module_info, bit_mapping
 
 # bitstream = "/home/oshears/Documents/openfpga/OpenFPGA/openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/run018/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_independent_bitstream.xml"
 # bitstream_label(bitstream)
