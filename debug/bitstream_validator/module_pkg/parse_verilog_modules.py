@@ -3,7 +3,8 @@ from . import *
 # import module_pkg.module_classes.Module
 from .module_classes import *
 
-
+import glob
+import os
 
 def parseModules(baseDir, resultsPath):
     '''
@@ -14,36 +15,18 @@ def parseModules(baseDir, resultsPath):
     It also extracts information about the muxes that exist in that module and what they're connected to
     '''
 
-    all_files = [   "sb_0__2_",
-                    "sb_0__1_",
-                    "sb_1__0_",
-                    "sb_1__1_",
-                    "sb_1__2_",
-                    "sb_2__1_",
-                    "sb_2__0_",
-                    "sb_2__2_",
-                    "cbx_1__1_",
-                    "cbx_1__0_",
-                    "cby_1__1_",
-                    "cby_0__1_",
-                    "cbx_1__2_",
-                    "cby_2__1_",
-                    "sb_0__0_",
-                    "grid_clb",
-                    "grid_io_bottom",
-                    "grid_io_top",
-                    "grid_io_right",
-                    "grid_io_left"
-            ]
+    source_paths = []
+    source_paths += glob.glob(f"{resultsPath}/SRC/routing/*.v")
+    source_paths += glob.glob(f"{resultsPath}/SRC/lb/grid_io_*.v")
+    source_paths += glob.glob(f"{resultsPath}/SRC/lb/grid_clb.v")
+
     ## for each module in fpga_top, we want to identify all of its io
-    for moduleName in all_files:
+    for source_path in source_paths:
+
+        moduleName = os.path.basename(source_path)[:-2]
 
         # open the verilog file corresponding to the current module and read its lines
-        verilog_fh = None
-        if "clb" in moduleName or "grid_io" in moduleName:
-            verilog_fh = open(f"{resultsPath}/SRC/lb/{moduleName}.v","r+")
-        else:
-            verilog_fh = open(f"{resultsPath}/SRC/routing/{moduleName}.v","r+")
+        verilog_fh = open(source_path,"r+")
         verilogFileLines = verilog_fh.readlines()
         verilog_fh.close()
 
@@ -62,38 +45,18 @@ def parseModules(baseDir, resultsPath):
                     io_fh.write(f"{x.group(3)},{int(x.group(2)) + 1},{x.group(1)}\n")
         io_fh.close()
 
-    ## For Switch Box and CB Modules
-    routing_files = [   "sb_0__2_",
-                        "sb_0__1_",
-                        "sb_1__0_",
-                        "sb_1__1_",
-                        "sb_1__2_",
-                        "sb_2__1_",
-                        "sb_2__0_",
-                        "sb_2__2_",
-                        "cbx_1__1_",
-                        "cbx_1__0_",
-                        "cby_1__1_",
-                        "cby_0__1_",
-                        "cbx_1__2_",
-                        "cby_2__1_",
-                        "sb_0__0_",
-                        "logical_tile_clb_mode_clb_",
-                        "grid_io_bottom",
-                        "grid_io_top",
-                        "grid_io_right",
-                        "grid_io_left"
-            ]
+    source_paths = []
+    source_paths += glob.glob(f"{resultsPath}/SRC/routing/*.v")
+    source_paths += glob.glob(f"{resultsPath}/SRC/lb/grid_io_*.v")
+    source_paths += glob.glob(f"{resultsPath}/SRC/lb/logical_tile_clb_mode_clb_.v")
     
     # for each module in fpga_top, we want to identify the routing muxes
-    for moduleName in routing_files:
+    for source_path in source_paths:
+
+        moduleName = os.path.basename(source_path)[:-2]
 
         # open the verilog file corresponding to the current module and read its lines
-        verilog_fh = None
-        if "clb" in moduleName or "grid_io" in moduleName:
-            verilog_fh = open(f"{resultsPath}/SRC/lb/{moduleName}.v","r+")
-        else:
-            verilog_fh = open(f"{resultsPath}/SRC/routing/{moduleName}.v","r+")
+        verilog_fh = open(source_path,"r+")
         verilogFileLines = verilog_fh.readlines()
         verilog_fh.close()
 

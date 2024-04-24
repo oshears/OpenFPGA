@@ -3,7 +3,7 @@ from . import *
 # import module_pkg.module_classes.Module
 from .module_classes import *
 
-def getModules(baseDir, bitstreamFile) -> dict[str, Module]:
+def getModules(baseDir, bitstreamFile, module_order) -> dict[str, Module]:
     '''
     get modules and their bit configurations from the xml bitstream file
     '''
@@ -46,6 +46,18 @@ def getModules(baseDir, bitstreamFile) -> dict[str, Module]:
                 node.setMuxDescription("lut ff config")
             else:
                 node.setMuxDescription("lut input config")
+        elif 'gpio' in topModuleName:
+            node.setMuxDescription("gpio config")
+        # sb
+        elif 'sb_' in topModuleName:
+            node.setMuxDescription("sb routing mux")
+        # cb
+        elif 'cbx' in topModuleName or 'cby' in topModuleName:
+            node.setMuxDescription("cb routing mux")
+            # if 'outpad' in node.muxOutput.name:
+            #     node.setMuxDescription("cb outpad config")
+            # else:
+            #     node.setMuxDescription("cb clb input config")
 
         modules[topModuleName].addNode(node)
         
