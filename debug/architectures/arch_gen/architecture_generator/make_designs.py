@@ -89,6 +89,7 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         NUM_LUT_INPUTS = 4
         NUM_INPUTS = 4
 
+        # TODO: need to cap the number of LUTs present at the output to avoid implementation issues
         luts_remaining = NUM_LUTS
         tier_outputs = [[f"fpga_in_{i}" for i in range(NUM_INPUTS)]]
         lut_count = 0
@@ -118,11 +119,14 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         lut_count = 0
 
         for lut_idx in range(NUM_LUTS - len(tier_outputs[-1])):
-            fh.write(f"  wire {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
+            # fh.write(f"  wire {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
+            fh.write(f"  wire \\lut_out_{lut_idx}\n")
             fh.write(f"  attribute \keep 1\n")
             lut_count += 1
 
+         # Only the last tier of LUTs will be outputs to avoid congestion
         for lut_idx in range(len(tier_outputs[-1])):
+            # fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_count}\n")
             fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_count}\n")
             lut_count += 1
 
@@ -157,6 +161,13 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
                 fh.write(f"  attribute \keep 1\n")
                 fh.write(f"  cell $lut $abc$963$auto$blifparse.cc:525:parse_blif${lut_count}\n")
                 lut_string = ''.join(random.choice("01") for i in range(16))
+                
+                # avoid having luts that are programmed as all 1's or all 0's
+                if '1' not in lut_string:
+                    lut_string = lut_string[:-1] + '1'
+                elif '0' not in lut_string:
+                    lut_string = lut_string[:-1] + '0'
+
                 fh.write(f"    parameter \LUT 16'{lut_string}\n")
                 fh.write(f"    parameter \WIDTH 4\n")
                 fh.write(f"    connect \\A {{")
