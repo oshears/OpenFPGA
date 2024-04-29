@@ -3,6 +3,8 @@ from . import *
 # import module_pkg.module_classes.Module
 from .module_classes import *
 
+from xml.etree import ElementTree
+
 def getModules(baseDir, bitstreamFile, module_order) -> dict[str, Module]:
     '''
     get modules and their bit configurations from the xml bitstream file

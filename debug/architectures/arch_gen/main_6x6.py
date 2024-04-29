@@ -118,6 +118,9 @@ def analyze_designs(VERTICAL_CLB_COUNT):
     info_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/_info"
     bitstreams_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/bitstreams"
 
+    if not os.path.exists(bitstreams_output_dir):
+        pathlib.Path(bitstreams_output_dir).mkdir(parents=True, exist_ok=False)
+
 
 
     top_level = f"{results_dir}/SRC/fpga_top.v"
@@ -155,6 +158,10 @@ def analyze_designs(VERTICAL_CLB_COUNT):
     # Now lets iterate through each bitstream and extract the windowed bits
     bitstream_paths = glob.glob(f"{bitstreams_output_dir}/*")
     for index in range(len(bitstream_paths)):
+        bitstream_progress = 100 * index / len(bitstream_paths)
+        if index % (len(bitstream_paths) / 10) == 0:
+            print(f"bitstreams processed: {bitstream_progress}%")
+        
         string_index = f"{index}".zfill(5)
         bitstream_path = bitstream_paths[index]
         bitstream_fh = open(bitstream_path, "r+")
@@ -192,6 +199,9 @@ def analyze_designs(VERTICAL_CLB_COUNT):
     
     # Lets open a window file for this bitstream for each of the 4 window types
     for window_index in range(len(windows)):
+        window_progress = 100 * window_index / len(windows)
+        print(f"window mappings created: {window_progress}%")
+
         window_label_path= info_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/_info"
         fh = open(f"{window_label_path}/window_{window_index}_labels.csv","w+")
         fh.write("module_name,path,name,bit\n")
@@ -228,8 +238,8 @@ if __name__ == "__main__":
     # gen_4x4_designs()
     # analyze_4x4_designs()
 
-    gen_6x6_designs(5000,route_chan_width=64)
-    # analyze_designs(VERTICAL_CLB_COUNT=6)
+    # gen_6x6_designs(5000,route_chan_width=64)
+    analyze_designs(VERTICAL_CLB_COUNT=6)
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)

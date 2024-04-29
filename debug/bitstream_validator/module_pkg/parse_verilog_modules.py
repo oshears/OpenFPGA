@@ -5,6 +5,7 @@ from .module_classes import *
 
 import glob
 import os
+import re
 
 def parseModules(baseDir, resultsPath):
     '''
