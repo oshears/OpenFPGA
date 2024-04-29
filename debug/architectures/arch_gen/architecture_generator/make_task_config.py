@@ -1,6 +1,6 @@
 # write task.conf
 
-def write_task_config(outdir, design_dir, NUM_DESIGNS=20000, device_size="2x2", device_arch="k4_N4_40nm_cc_openfpga.xml"):
+def write_task_config(outdir, design_dir, NUM_DESIGNS=20000, device_size="2x2", device_arch="k4_N4_40nm_cc_openfpga.xml", route_chan_width=40):
     # NUM_DESIGNS=20000
 
     fh = open(f"{outdir}/task.conf","w+")
@@ -20,7 +20,7 @@ def write_task_config(outdir, design_dir, NUM_DESIGNS=20000, device_size="2x2", 
     fh.write(f"openfpga_shell_template=${{PATH:OPENFPGA_PATH}}/openfpga_flow/openfpga_shell_scripts/write_full_testbench_example_script_1.openfpga\n")
     fh.write(f"openfpga_arch_file=${{PATH:OPENFPGA_PATH}}/openfpga_flow/openfpga_arch/{device_arch}\n")
     fh.write(f"openfpga_sim_setting_file=${{PATH:OPENFPGA_PATH}}/openfpga_flow/openfpga_simulation_settings/auto_sim_openfpga.xml\n")
-    fh.write(f"openfpga_vpr_device_layout=--device {device_size} --route_chan_width 40\n")
+    fh.write(f"openfpga_vpr_device_layout=--device {device_size} --route_chan_width {route_chan_width}\n")
     fh.write(f"openfpga_fast_configuration=\n")
     fh.write(f"\n")
 
@@ -42,7 +42,7 @@ def write_task_config(outdir, design_dir, NUM_DESIGNS=20000, device_size="2x2", 
     for i in range(NUM_DESIGNS):
         design_num = f"{(i+1)}".zfill(4)
         fh.write(f"bench{i}_top=fpga_design\n")
-        fh.write(f"bench{i}_chan_width=40\n")
+        fh.write(f"bench{i}_chan_width={route_chan_width}\n")
     fh.write(f"\n")
 
     fh.write(f"[SCRIPT_PARAM_MIN_ROUTE_CHAN_WIDTH]\n")
