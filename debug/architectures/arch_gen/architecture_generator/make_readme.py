@@ -64,7 +64,7 @@ def make_readme(outdir, VERTICAL_CLB_COUNT, lut_count, module_layout_grid, modul
             for x in range(device_width):
                 module_name = module_layout_grid[x][y]
                 if module_name in windows[window_idx]:
-                    fh.write(f"| **{module_layout_grid[x][y]}** ")
+                    fh.write(f"| <mark>**{module_layout_grid[x][y]}** ")
                 else:
                     fh.write(f"| {module_layout_grid[x][y]} ")
             fh.write("|\n")
