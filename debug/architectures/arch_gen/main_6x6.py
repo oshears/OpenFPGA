@@ -108,6 +108,37 @@ def gen_6x6_designs(NUM_DESIGNS=1, route_chan_width=40):
 #     for window_modules in windows:
 #         make_windows(module_info, window_modules)
 
+def validate_windows(grid, windows):
+
+    config_order = []
+    
+    for module_name in windows[0]:
+        window_order = 0
+        for x in range(len(grid)):
+            for y in range(len(grid[x])):
+                if module_name == grid[x][y]:
+                    config_order.append(window_order)
+                    print(window_order)
+
+                if grid[x][y] in windows[0]:
+                    window_order += 1
+    
+    for window in windows[1:]:
+        print("Next Window:")
+        for module_name_idx in range(len(window)):
+            window_order = 0
+            for x in range(len(grid)):
+                for y in range(len(grid[x])):
+
+                    if window[module_name_idx] == grid[x][y]:
+                        if window_order != config_order[module_name_idx]:
+                            raise Exception("Windows are not aligned! Module config positions are mismatched!")
+                        else:
+                            print(window_order)
+
+                    if grid[x][y] in window:
+                        window_order += 1
+
 def analyze_designs(VERTICAL_CLB_COUNT):
     # openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v
 
@@ -115,8 +146,9 @@ def analyze_designs(VERTICAL_CLB_COUNT):
     SIZE = f"{VERTICAL_CLB_COUNT}x{VERTICAL_CLB_COUNT}"
     results_dir = f"openfpga_flow/tasks/basic_tests/0_debug_task/fpga_{SIZE}_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
     output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb"
-    info_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/_info"
-    bitstreams_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/bitstreams"
+    # output_dir = f"debug/architectures/arch_gen/results/openfpga__arch_6x6__lut_140__tiered_luts__20240429"
+    info_output_dir = f"{output_dir}/_info"
+    bitstreams_output_dir = f"{output_dir}/bitstreams"
 
     if not os.path.exists(bitstreams_output_dir):
         pathlib.Path(bitstreams_output_dir).mkdir(parents=True, exist_ok=False)
@@ -131,6 +163,9 @@ def analyze_designs(VERTICAL_CLB_COUNT):
 
     module_layout_grid = get_module_layout_grid(module_info, VERTICAL_CLB_COUNT)
     # device_visualization(module_layout_grid, module_info, moduleConfigOrder)
+
+    # Ensure that the grid positioning of all the windows are in alignment
+    validate_windows(module_layout_grid, windows_6x6)
 
     # Copy bitstreams
     # NUM_DESIGNS = 20000
