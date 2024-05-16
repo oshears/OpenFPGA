@@ -34,7 +34,22 @@ def bitstream_label(module_order, xml_bitstream_filename, out_dir):
     modules = {}
     module_info = {}
     bit_mapping = []
-    for configNode in root.findall(".//bitstream/.."): 
+
+
+    # find all configuration nodes (multiplexers, LUTs, and GPIO pads)
+    configNodes = root.findall(".//bitstream/..")
+
+    num_config_nodes_processed = 0
+    num_configurable_nodes = len(configNodes)
+    iterations = num_config_nodes_processed / 20
+
+    # for configuration node in the bitstream (e.g., multiplexer, LUT)
+    for configNode in configNodes: 
+
+        # show progress
+        if num_config_nodes_processed % iterations == 0:
+            print(f"Parsing Configuration Nodes: {num_config_nodes_processed} / {num_configurable_nodes} ({100 * num_config_nodes_processed / num_configurable_nodes}%)")
+
         topModuleName = configNode[0][1].attrib["name"]
         nodePath = "/".join([f"{configNode[0][i].attrib['name']}" for i in range(1,len(configNode[0]))])
         nodeName = configNode[0][-1].attrib["name"]
@@ -45,11 +60,12 @@ def bitstream_label(module_order, xml_bitstream_filename, out_dir):
         # else:
         #     bits = [int(configNode[-1][i].attrib["value"]) for i in range(len(configNode[-1])-1,-1,-1)]
 
-
+        # if the module has not already been found
         if topModuleName not in modules.keys():
             modules[topModuleName] = []
             module_info[topModuleName] = []
-
+        
+        # for each bit in the module
         for bit in bits:
             bitString = ""
             bitString += f"{topModuleName},"
@@ -67,6 +83,8 @@ def bitstream_label(module_order, xml_bitstream_filename, out_dir):
                 "bit value": bit
             }
             module_info[topModuleName].append(bit_info)
+        
+        num_config_nodes_processed += 1
 
     ## write modules and routing nodes out to file
     # fh = open(f"../random_bitstreams{suffix}/{file}.csv","w+")

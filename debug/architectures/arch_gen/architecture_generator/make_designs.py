@@ -92,17 +92,74 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         # TODO: need to cap the number of LUTs present at the output to avoid implementation issues
         luts_remaining = NUM_LUTS
         tier_outputs = [[f"fpga_in_{i}" for i in range(NUM_INPUTS)]]
+        used_outputs = []
+        all_tier_lut_inputs = [[]] # X: Tier, Y: LUT, Z: LUT input
+        device_outputs = []
         lut_count = 0
+        num_tiers = 0
+
+        # random.seed(0)
+        
+        # while there are still LUTs to be placed
         while luts_remaining > 0:
+
             curr_tier = []
+
+            # pick a random number of LUTs for this tier
             luts_in_tier = random.randint(min(4,luts_remaining), luts_remaining)
+
+            # reduce the number of luts remaining
             luts_remaining -= luts_in_tier
+
+            # create an output for each LUT at this tier index in tier_outputs
             for lut_idx in range(luts_in_tier):
-                curr_tier.append(f"lut_out_{lut_count}")
+                lut_output_name = f"lut_out_{lut_count}"
+                curr_tier.append(lut_output_name)
+                if luts_remaining <= 0:
+                    device_outputs.append(lut_output_name)
                 lut_count += 1
             tier_outputs.append(curr_tier)
 
-        # fh.write(f"# design #: {index_str}\n")
+            # decide which inputs will go to which LUTs
+            tier_lut_inputs = []
+            for lut_idx in range(luts_in_tier):
+
+                # get all outputs from the previous tier and shuffle their order
+                prev_tier_outputs = tier_outputs[num_tiers]
+                random.shuffle(prev_tier_outputs)
+
+                # append the first NUM_LUT_INPUTS tier outputs as inputs to the current LUT
+                curr_lut_inputs = []
+                for lut_input_index in range(NUM_LUT_INPUTS):
+                    curr_lut_inputs.append(prev_tier_outputs[lut_input_index])
+                
+                # add the list of current_lut_inputs to the list of tier_lut_inputs
+                tier_lut_inputs.append(curr_lut_inputs)
+
+            # add the list all of the LUT input lists to the list of all tier-lut inputs
+            all_tier_lut_inputs.append(tier_lut_inputs)
+
+            # track LUTs that go to outpads
+
+            # for each output from previous tier
+            if num_tiers > 0:
+                for lut_output_wire in tier_outputs[num_tiers]:
+                    lut_output_has_sink = False
+
+                    # for each set of LUT inputs in the current tier
+                    for lut_inputs in tier_lut_inputs:
+                        # if the output sinks into one of the current lut_inputs at at the next tier
+                        if lut_output_wire in lut_inputs:
+                            lut_output_has_sink = True
+                            break
+
+                    if not lut_output_has_sink:
+                        device_outputs.append(lut_output_wire)
+            
+            
+            
+            num_tiers += 1
+        
         fh.write(f"# num luts #: {NUM_LUTS}\n")
         fh.write(f"# LUT TIERS: " + "->".join([str(len(tier_outputs[i])) for i in range(len(tier_outputs))]) + "\n")
         fh.write(f"autoidx 140\n")
@@ -112,48 +169,23 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         for lut_input_idx in range(NUM_INPUTS):
             fh.write(f"  wire input {lut_input_idx} \\fpga_in_{lut_input_idx}\n")
         
-        # for lut_idx in range(NUM_LUTS):
-        #     fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
-        #     fh.write(f"  attribute \keep 1\n")
+        io_count = NUM_INPUTS
 
-        lut_count = 0
+        for lut_idx in range(NUM_LUTS):
+            if f"lut_out_{lut_idx}" in device_outputs:
+                fh.write(f"  wire output {io_count} \\lut_out_{lut_idx}\n")
+                io_count += 1
+            else:
+                fh.write(f"  wire \\lut_out_{lut_idx}\n")
+                fh.write(f"  attribute \keep 1\n")
 
-        for lut_idx in range(NUM_LUTS - len(tier_outputs[-1])):
-            # fh.write(f"  wire {NUM_INPUTS + lut_idx} \\lut_out_{lut_idx}\n")
-            fh.write(f"  wire \\lut_out_{lut_idx}\n")
-            fh.write(f"  attribute \keep 1\n")
-            lut_count += 1
-
-         # Only the last tier of LUTs will be outputs to avoid congestion
-        for lut_idx in range(len(tier_outputs[-1])):
-            # fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_count}\n")
-            fh.write(f"  wire output {NUM_INPUTS + lut_idx} \\lut_out_{lut_count}\n")
-            lut_count += 1
-
-        # prev_tier = list(range(4))
-        # prev_tier_outputs = [f"fpga_in_{i}" for i in range(NUM_INPUTS)]
-        # next_tier_outputs = []
         lut_count = 0
 
         for curr_tier_index in range(1,len(tier_outputs)):
             
-            # OYS: Need at least 4 luts in the previous tier to provide at least 4 inputs to the next tier luts
-            # luts_in_tier = random.randint(min(4,luts_remaining), luts_remaining)
-            # luts_remaining -= luts_in_tier
-            # print(luts_in_tier)
-            luts_in_tier = len(tier_outputs[curr_tier_index])
-
-            # randomize connections between LUTs with wires
-            for lut_idx in range(luts_in_tier):
-
-                ## randomly assign lut inputs
-                # shuffled_input_indexes = list(range(len(prev_tier_outputs)))
-                # random.shuffle(shuffled_input_indexes)
-                prev_tier_inputs = tier_outputs[curr_tier_index - 1]
-                random.shuffle(prev_tier_inputs)
+            for lut_idx in range(len(tier_outputs[curr_tier_index])):
 
                 curr_lut_output = tier_outputs[curr_tier_index][lut_idx]
-                # for lut_input_idx in range(NUM_LUT_INPUTS):
 
                 ## instantiate LUT
                 # fh.write(f"  cell $lut $abc$963$auto$blifparse.cc:525:parse_blif${964 + lut_idx}\n")
@@ -173,19 +205,14 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
                 fh.write(f"    connect \\A {{")
 
                 for lut_input_idx in range(NUM_LUT_INPUTS):
-                    fh.write(f" \\{prev_tier_inputs[lut_input_idx]}")
-                    # \\fpga_in_{lut_input_idx[1]} \\fpga_in_{lut_input_idx[2]} \\fpga_in_{lut_input_idx[3]}}}")
+                    fh.write(f" \\{all_tier_lut_inputs[curr_tier_index][lut_idx][lut_input_idx]}")
                 
                 fh.write(f" }}\n")
                 fh.write(f"    connect \Y \\{curr_lut_output}\n")
                 fh.write(f"  end\n")
 
-                # next_tier_outputs.append(f"fpga_out_{lut_idx}")
-
                 lut_count += 1
             
-            # prev_tier_outputs = next_tier_outputs
-
         fh.write(f"end\n")
 
         fh.close()

@@ -69,6 +69,7 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
             if "clb" in moduleName:
                 
                 # add the four (4) FLE internal output wires (because there are four FLEs per CLB)
+                # TODO: Generalize this
                 clb_out_mappings = [
                     "bottom_width_0_height_0_subtile_0__pin_O_0_",
                     "left_width_0_height_0_subtile_0__pin_O_1_", 
@@ -182,6 +183,7 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                 
                                 else:
                                     # this is a list of mux outputs to clb outputs (skipping over the FLEs)
+                                    # TODO: Generalize this
                                     clb_output_mappings = {
                                         "mux_tree_size14_0_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
                                         "mux_tree_size14_1_out":["bottom_width_0_height_0_subtile_0__pin_O_0_", "logical_tile_clb_mode_default__fle_0_fle_out"],
@@ -218,6 +220,7 @@ def mapMuxes(baseDir, modules:dict[str,Module]):
                                     if "clb" in moduleName:
 
                                         # this is a list of clb input to output mappings
+                                        # TODO: Generalize / Check this
                                         clb_input_mappings = {
                                             "clb_I[0]":"top_width_0_height_0_subtile_0__pin_I_0_",
                                             "clb_I[1]":"right_width_0_height_0_subtile_0__pin_I_1_",

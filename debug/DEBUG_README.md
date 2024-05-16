@@ -8,6 +8,8 @@ source /home/oshears/Documents/openfpga/OpenFPGA/openfpga.sh
 python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/generate_fabric
 python3 openfpga_flow/scripts/run_fpga_task.py fpga_verilog/adder/hard_adder
 python3 openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis --maxthreads=8 --debug
+python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/fpga_40x40_clb --maxthreads=8 --debug
+python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/openfpga__arch_42x42__tiered_luts__20240516 --maxthreads=8 --debug
 ```
 
 ---

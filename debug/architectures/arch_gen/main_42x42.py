@@ -9,12 +9,14 @@ from architecture_generator.bit_labeller import *
 from architecture_generator.window_maker import *
 from architecture_generator.make_readme import *
 
-from architecture_generator.windows_6x6 import *
+from architecture_generator.windows_42x42 import *
 
 import shutil
 import os
 import pathlib
 import glob
+
+import pickle
 
 # from openfpga_flow.scripts.run_fpga_task.py
 # from run_fpga_task import main
@@ -45,12 +47,12 @@ import glob
 
 #     # python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/0_debug_task/fpga_4x4_clb
 
-def gen_6x6_designs(NUM_DESIGNS=1, route_chan_width=40):
+def gen_42x42_designs(NUM_DESIGNS=1, route_chan_width=42):
 
-    NUM_LUTS = 6*6*4 - 4
-    SIZE= "6x6"
+    NUM_LUTS = 42*42*4 - 4
+    SIZE= "42x42"
 
-    dir_name = "openfpga__arch_6x6__tiered_luts__20240516"
+    dir_name = "openfpga__arch_42x42__tiered_luts__20240516"
 
     results_dir = f"debug/architectures/arch_gen/results/{dir_name}"
     if os.path.exists(results_dir):
@@ -141,13 +143,15 @@ def validate_windows(grid, windows):
                     if grid[x][y] in window:
                         window_order += 1
 
-def analyze_designs(VERTICAL_CLB_COUNT):
+def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
     # openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v
+
+    dir_name = "openfpga__arch_42x42__tiered_luts__20240516"
 
     NUM_LUTS = VERTICAL_CLB_COUNT*VERTICAL_CLB_COUNT*4 - 4
     SIZE = f"{VERTICAL_CLB_COUNT}x{VERTICAL_CLB_COUNT}"
-    results_dir = f"openfpga_flow/tasks/basic_tests/0_debug_task/fpga_{SIZE}_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
-    output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb"
+    results_dir = f"openfpga_flow/tasks/basic_tests/0_debug_task/{dir_name}/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH"
+    output_dir = f"debug/architectures/arch_gen/results/{dir_name}"
     # output_dir = f"debug/architectures/arch_gen/results/openfpga__arch_6x6__lut_140__tiered_luts__20240429"
     info_output_dir = f"{output_dir}/_info"
     bitstreams_output_dir = f"{output_dir}/bitstreams"
@@ -156,28 +160,39 @@ def analyze_designs(VERTICAL_CLB_COUNT):
         pathlib.Path(bitstreams_output_dir).mkdir(parents=True, exist_ok=False)
 
 
-
+    # TODO: might want to make these data values into pickle files 
     top_level = f"{results_dir}/SRC/fpga_top.v"
     moduleConfigOrder = config_chain_extraction(top_level)
 
     xml_bitstream = f"{results_dir}/fabric_independent_bitstream.xml"
     module_info, bit_mapping = bitstream_label(moduleConfigOrder, xml_bitstream, info_output_dir)
 
+    with open(f'{info_output_dir}/module_config_order.pkl',"wb") as file:
+        pickle.dump(moduleConfigOrder, file)
+
+    with open(f'{info_output_dir}/module_info.pkl',"wb") as file:
+        pickle.dump(module_info, file)
+
+    with open(f'{info_output_dir}/bit_mapping.pkl',"wb") as file:
+        pickle.dump(bit_mapping, file)
+
+    return
+
     module_layout_grid = get_module_layout_grid(module_info, VERTICAL_CLB_COUNT)
     # device_visualization(module_layout_grid, module_info, moduleConfigOrder)
 
     # Ensure that the grid positioning of all the windows are in alignment
-    validate_windows(module_layout_grid, windows_6x6)
+    validate_windows(module_layout_grid, windows_42x42)
 
     # Copy bitstreams
     # NUM_DESIGNS = 20000
-    NUM_DESIGNS = 5000
+    NUM_DESIGNS = 14
     for i in range(NUM_DESIGNS):
         idx = f"{i}".zfill(5)
-        bitstream_file = f"openfpga_flow/tasks/basic_tests/0_debug_task/fpga_{SIZE}_clb/latest/k4_N4_tileable_40nm_new/bench{i}_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_bitstream.bit"
+        bitstream_file = f"openfpga_flow/tasks/basic_tests/0_debug_task/{dir_name}/latest/k4_N4_tileable_40nm_new/bench{i}_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_bitstream.bit"
         shutil.copy(f"{bitstream_file}",f"{bitstreams_output_dir}/{idx}.bit")
 
-    windows = windows_6x6
+    windows = windows_42x42
 
     # Make windowed bitstream files
 
@@ -239,7 +254,7 @@ def analyze_designs(VERTICAL_CLB_COUNT):
         window_progress = 100 * window_index / len(windows)
         print(f"window mappings created: {window_progress}%")
 
-        window_label_path= info_output_dir = f"debug/architectures/arch_gen/results/fpga_{SIZE}_clb/_info"
+        window_label_path= info_output_dir = f"debug/architectures/arch_gen/results/{dir_name}/_info"
         fh = open(f"{window_label_path}/window_{window_index}_labels.csv","w+")
         fh.write("module_name,path,name,bit\n")
 
@@ -275,9 +290,8 @@ if __name__ == "__main__":
     # gen_4x4_designs()
     # analyze_4x4_designs()
 
-    gen_6x6_designs(5000,route_chan_width=64)
-    # gen_6x6_designs(1,route_chan_width=64)
-    analyze_designs(VERTICAL_CLB_COUNT=6)
+    # gen_42x42_designs(14, route_chan_width=128)
+    analyze_designs(VERTICAL_CLB_COUNT=42)
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)
