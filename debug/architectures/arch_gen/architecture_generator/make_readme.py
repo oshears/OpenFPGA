@@ -25,7 +25,6 @@ def make_readme(outdir, VERTICAL_CLB_COUNT, lut_count, module_layout_grid, modul
             module_name = module_layout_grid[x][y]
             fh.write(f"| {module_layout_grid[x][y]} ")
         fh.write("|\n")
-    fh.write("|\n")
 
     # print configuration order
     fh.write("### Module Configuration Order\n")
@@ -37,7 +36,6 @@ def make_readme(outdir, VERTICAL_CLB_COUNT, lut_count, module_layout_grid, modul
             config_index = module_config_order.index(module_name)
             fh.write(f"| {config_index} ")
         fh.write("|\n")
-    fh.write("|\n")
 
     # print bit counts
     fh.write("### Module Configuration Bit Counts\n")
@@ -48,7 +46,6 @@ def make_readme(outdir, VERTICAL_CLB_COUNT, lut_count, module_layout_grid, modul
             module_name = module_layout_grid[x][y]
             fh.write(f"| {len(module_info[module_name])} ")
         fh.write("|\n")
-    fh.write("|\n")
 
     fh.write("## Windows:\n")
 
@@ -68,7 +65,6 @@ def make_readme(outdir, VERTICAL_CLB_COUNT, lut_count, module_layout_grid, modul
                 else:
                     fh.write(f"| {module_layout_grid[x][y]} ")
             fh.write("|\n")
-        fh.write("|\n")
 
 
     fh.close()

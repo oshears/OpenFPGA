@@ -68,7 +68,7 @@ def gen_42x42_designs(NUM_DESIGNS=1, route_chan_width=42):
     if not os.path.exists(open_fpga_dir):
         pathlib.Path(open_fpga_dir).mkdir(parents=True, exist_ok=False)
 
-    make_tiered_il_designs(design_dir, NUM_DESIGNS, NUM_LUTS=NUM_LUTS)
+    make_tiered_il_designs(design_dir, 42, NUM_DESIGNS, NUM_LUTS=NUM_LUTS)
     
     write_task_config(info_dir, design_dir, NUM_DESIGNS, SIZE, route_chan_width=route_chan_width)
 
@@ -290,8 +290,8 @@ if __name__ == "__main__":
     # gen_4x4_designs()
     # analyze_4x4_designs()
 
-    # gen_42x42_designs(14, route_chan_width=128)
-    analyze_designs(VERTICAL_CLB_COUNT=42)
+    gen_42x42_designs(14, route_chan_width=128)
+    # analyze_designs(VERTICAL_CLB_COUNT=42)
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)

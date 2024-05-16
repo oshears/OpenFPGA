@@ -74,15 +74,15 @@ def make_std_il_designs(design_dir, NUM_DESIGNS=20000, NUM_LUTS = 16):
 
         fh.close()
 
-def make_tiered_il_designs(design_dir, NUM_DESIGNS=20000, NUM_LUTS = 16):
+def make_tiered_il_designs(design_dir, device_width, NUM_DESIGNS=20000, NUM_LUTS = 16):
     
     for i in range(NUM_DESIGNS):
         index = i
         index_str = f"{(index + 1)}".zfill(5)
         os.mkdir(f"{design_dir}/{index_str}")
-        make_tiered_il_design(f"{design_dir}/{index_str}", NUM_LUTS)
+        make_tiered_il_design(f"{design_dir}/{index_str}", NUM_LUTS, device_width)
 
-def make_tiered_il_design(design_dir, NUM_LUTS):
+def make_tiered_il_design(design_dir, NUM_LUTS, device_width):
         
         fh = open(f"{design_dir}/design.il","w+")
 
@@ -98,7 +98,15 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
         lut_count = 0
         num_tiers = 0
 
-        # random.seed(0)
+        # number of gpio pads
+        NUM_DEVICE_IO = (device_width * 4) * 8
+
+        NUM_DEVICE_INPUTS = None
+        NUM_DEVICE_OUTPUTS = None
+        MIN_DEVICE_OUTPUTS = 4
+        MAX_DEVICE_OUTPUTS = NUM_DEVICE_IO - 4
+
+        random.seed(0)
         
         # while there are still LUTs to be placed
         while luts_remaining > 0:
@@ -106,55 +114,99 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
             curr_tier = []
 
             # pick a random number of LUTs for this tier
-            luts_in_tier = random.randint(min(4,luts_remaining), luts_remaining)
+            if num_tiers == 0:
+                
+                # TODO: Make this variable, not just fixed at 4
+                # OYS: Maybe this can be a function of the number of LUTs at the last level
+                # NUM_DEVICE_INPUTS = NUM_DEVICE_IO - NUM_DEVICE_OUTPUTS
+                NUM_DEVICE_INPUTS = 4
+
+                NUM_DEVICE_OUTPUTS = random.randint(MIN_DEVICE_OUTPUTS, MAX_DEVICE_OUTPUTS)
+                
+                luts_in_tier = NUM_DEVICE_OUTPUTS
+                
+            else:
+                # luts_in_tier = random.randint(min(4,luts_remaining), luts_remaining)
+                luts_in_next_tier = len(tier_outputs[-1 * num_tiers])
+                # concept:
+                # - constrain the maximum number of luts to put in this layer
+                # - the lower of the number of luts remaining and the number of luts in next layer times 4
+                # - two extremes:
+                # -   1. every lut has a unique input (luts_in_next_tier * 4)
+                # -   2. all luts share the same 4 unique inputs (4 luts in this tier)
+                # this technique ensures that all of the previous inputs will sink into the next tier
+                # min_num_luts_in_curr_tier = min(luts_remaining, luts_in_next_tier * 4)
+                luts_in_tier = min(random.randint(4, luts_in_next_tier*4), luts_remaining)
 
             # reduce the number of luts remaining
             luts_remaining -= luts_in_tier
+
+            next_tier_inputs = []
+
+            first_tier_inputs = []
 
             # create an output for each LUT at this tier index in tier_outputs
             for lut_idx in range(luts_in_tier):
                 lut_output_name = f"lut_out_{lut_count}"
                 curr_tier.append(lut_output_name)
-                if luts_remaining <= 0:
+                # if luts_remaining <= 0:
+                if num_tiers == 0:
                     device_outputs.append(lut_output_name)
+                else:
+                    next_tier_inputs.append(lut_output_name)
+                
+                if luts_remaining == 0:
+                    device_inputs = [f"fpga_in_{idx}" for idx in range(NUM_DEVICE_INPUTS)]
+                    random.shuffle(device_inputs)
+                    for device_input in device_inputs:
+                        first_tier_inputs.append(device_input)
+                
                 lut_count += 1
-            tier_outputs.append(curr_tier)
+            # tier_outputs.append(curr_tier)
+            tier_outputs.insert(1,curr_tier)
+            
+            random.shuffle(next_tier_inputs)
+            if num_tiers > 0:
+                all_tier_lut_inputs.insert(1,next_tier_inputs)
+
+            if len(first_tier_inputs) > 0:
+                all_tier_lut_inputs.insert(1,first_tier_inputs)
 
             # decide which inputs will go to which LUTs
-            tier_lut_inputs = []
-            for lut_idx in range(luts_in_tier):
+            # tier_lut_inputs = []
+            # for lut_idx in range(luts_in_tier):
 
-                # get all outputs from the previous tier and shuffle their order
-                prev_tier_outputs = tier_outputs[num_tiers]
-                random.shuffle(prev_tier_outputs)
+            #     # get all outputs from the previous tier and shuffle their order
+            #     prev_tier_outputs = tier_outputs[num_tiers]
+            #     random.shuffle(prev_tier_outputs)
 
-                # append the first NUM_LUT_INPUTS tier outputs as inputs to the current LUT
-                curr_lut_inputs = []
-                for lut_input_index in range(NUM_LUT_INPUTS):
-                    curr_lut_inputs.append(prev_tier_outputs[lut_input_index])
+            #     # append the first NUM_LUT_INPUTS tier outputs as inputs to the current LUT
+            #     curr_lut_inputs = []
+            #     for lut_input_index in range(NUM_LUT_INPUTS):
+            #         curr_lut_inputs.append(prev_tier_outputs[lut_input_index])
                 
-                # add the list of current_lut_inputs to the list of tier_lut_inputs
-                tier_lut_inputs.append(curr_lut_inputs)
+            #     # add the list of current_lut_inputs to the list of tier_lut_inputs
+            #     tier_lut_inputs.append(curr_lut_inputs)
 
-            # add the list all of the LUT input lists to the list of all tier-lut inputs
-            all_tier_lut_inputs.append(tier_lut_inputs)
+            # # add the list all of the LUT input lists to the list of all tier-lut inputs
+            # all_tier_lut_inputs.append(tier_lut_inputs)
 
             # track LUTs that go to outpads
 
             # for each output from previous tier
-            if num_tiers > 0:
-                for lut_output_wire in tier_outputs[num_tiers]:
-                    lut_output_has_sink = False
+            # if num_tiers > 0:
+            #     for lut_output_wire in tier_outputs[num_tiers]:
+            #         lut_output_has_sink = False
 
-                    # for each set of LUT inputs in the current tier
-                    for lut_inputs in tier_lut_inputs:
-                        # if the output sinks into one of the current lut_inputs at at the next tier
-                        if lut_output_wire in lut_inputs:
-                            lut_output_has_sink = True
-                            break
+            #         # for each set of LUT inputs in the current tier
+            #         for lut_inputs in tier_lut_inputs:
+            #             # if the output sinks into one of the current lut_inputs at at the next tier
+            #             if lut_output_wire in lut_inputs:
+            #                 lut_output_has_sink = True
+            #                 break
 
-                    if not lut_output_has_sink:
-                        device_outputs.append(lut_output_wire)
+            #         if not lut_output_has_sink:
+            #             device_outputs.append(lut_output_wire)
             
             
             
@@ -177,11 +229,13 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
                 io_count += 1
             else:
                 fh.write(f"  wire \\lut_out_{lut_idx}\n")
-                fh.write(f"  attribute \keep 1\n")
+                # fh.write(f"  attribute \keep 1\n")
 
         lut_count = 0
 
         for curr_tier_index in range(1,len(tier_outputs)):
+
+            tier_input_counter = 0
             
             for lut_idx in range(len(tier_outputs[curr_tier_index])):
 
@@ -190,7 +244,7 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
                 ## instantiate LUT
                 # fh.write(f"  cell $lut $abc$963$auto$blifparse.cc:525:parse_blif${964 + lut_idx}\n")
                 # fh.write(f"  cell $lut $abc$963$auto$blifparse.cc:525:parse_blif${lut_idx}\n")
-                fh.write(f"  attribute \keep 1\n")
+                # fh.write(f"  attribute \keep 1\n")
                 fh.write(f"  cell $lut $abc$963$auto$blifparse.cc:525:parse_blif${lut_count}\n")
                 lut_string = ''.join(random.choice("01") for i in range(16))
                 
@@ -203,9 +257,16 @@ def make_tiered_il_design(design_dir, NUM_LUTS):
                 fh.write(f"    parameter \LUT 16'{lut_string}\n")
                 fh.write(f"    parameter \WIDTH 4\n")
                 fh.write(f"    connect \\A {{")
-
+                
+                # get the next 4 inputs and shuffle again
+                lut_inputs = []
                 for lut_input_idx in range(NUM_LUT_INPUTS):
-                    fh.write(f" \\{all_tier_lut_inputs[curr_tier_index][lut_idx][lut_input_idx]}")
+                    lut_inputs.append(all_tier_lut_inputs[curr_tier_index][tier_input_counter])
+                    tier_input_counter = (tier_input_counter + 1) % len(all_tier_lut_inputs[curr_tier_index])
+                random.shuffle(lut_inputs)
+                
+                for lut_input_idx in range(NUM_LUT_INPUTS):
+                    fh.write(f" \\{lut_inputs[lut_input_idx]}")
                 
                 fh.write(f" }}\n")
                 fh.write(f"    connect \Y \\{curr_lut_output}\n")
