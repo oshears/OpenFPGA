@@ -7,7 +7,7 @@ def generate_windows(device_width = 42, window_dim=(2,2)):
 
     for window_x in range(horizontal_window_count):
         for window_y in range(horizontal_window_count):
-            print(f"Window #{window_count}")
+            # print(f"Window #{window_count}")
             window = []
 
             # clbs

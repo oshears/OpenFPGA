@@ -143,7 +143,7 @@ def validate_windows(grid, windows):
                     if grid[x][y] in window:
                         window_order += 1
 
-def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
+def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load=True):
     # openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v
 
     dir_name = "openfpga__arch_42x42__tiered_luts__20240516"
@@ -162,21 +162,36 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
 
     # TODO: might want to make these data values into pickle files 
     top_level = f"{results_dir}/SRC/fpga_top.v"
-    moduleConfigOrder = config_chain_extraction(top_level)
+    # moduleConfigOrder = config_chain_extraction(top_level)
+    moduleConfigOrder = None
+    if load:
+        with open(f'{info_output_dir}/module_config_order.pkl',"rb") as file:
+            moduleConfigOrder = pickle.load(file)
 
-    with open(f'{info_output_dir}/module_config_order.pkl',"wb") as file:
-        pickle.dump(moduleConfigOrder, file)
+    if overwrite:
+        with open(f'{info_output_dir}/module_config_order.pkl',"wb") as file:
+            pickle.dump(moduleConfigOrder, file)
 
     xml_bitstream = f"{results_dir}/fabric_independent_bitstream.xml"
-    module_info, bit_mapping = bitstream_label(moduleConfigOrder, xml_bitstream, info_output_dir)
+    # module_info, bit_mapping = bitstream_label(moduleConfigOrder, xml_bitstream, info_output_dir)
+    module_info = None
+    bit_mapping = None
 
-    with open(f'{info_output_dir}/module_info.pkl',"wb") as file:
-        pickle.dump(module_info, file)
+    if load:
+        with open(f'{info_output_dir}/module_info.pkl',"rb") as file:
+            module_info = pickle.load(file)
+        
+        with open(f'{info_output_dir}/bit_mapping.pkl',"rb") as file:
+            bit_mapping = pickle.load(file)
 
-    with open(f'{info_output_dir}/bit_mapping.pkl',"wb") as file:
-        pickle.dump(bit_mapping, file)
+    if overwrite:
+        with open(f'{info_output_dir}/module_info.pkl',"wb") as file:
+            pickle.dump(module_info, file)
 
-    return
+        with open(f'{info_output_dir}/bit_mapping.pkl',"wb") as file:
+            pickle.dump(bit_mapping, file)
+
+    # return
 
     module_layout_grid = get_module_layout_grid(module_info, VERTICAL_CLB_COUNT)
     # device_visualization(module_layout_grid, module_info, moduleConfigOrder)
@@ -200,7 +215,7 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
     for i in range(len(windows)):
 
         # make window directory
-        window_dir = f"{output_dir}/window_{i}"
+        window_dir = f"{output_dir}/partition_{i}"
         window_dirs.append(window_dir)
         if os.path.exists(window_dir):
             shutil.rmtree(window_dir)
@@ -209,8 +224,8 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
     # Now lets iterate through each bitstream and extract the windowed bits
     bitstream_paths = glob.glob(f"{bitstreams_output_dir}/*")
     for index in range(len(bitstream_paths)):
-        bitstream_progress = 100 * index / len(bitstream_paths)
-        if index % (len(bitstream_paths) / 10) == 0:
+        bitstream_progress = 100 * index // len(bitstream_paths)
+        if index % (len(bitstream_paths) // 10) == 0:
             print(f"bitstreams processed: {bitstream_progress}%")
         
         string_index = f"{index}".zfill(5)
@@ -223,7 +238,7 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
         fh_list = []
         for i in range(len(window_dirs)):
             window_dir = window_dirs[i]
-            fh = open(f"{window_dir}/{string_index}.window{i}.bit","w+")
+            fh = open(f"{window_dir}/{string_index}.partition{i}.bit","w+")
             fh_list.append(fh)
 
         # Now lets go through each bit of the bitstream and determine which windows it should be copied into
