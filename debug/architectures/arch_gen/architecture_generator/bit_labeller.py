@@ -41,7 +41,7 @@ def bitstream_label(module_order, xml_bitstream_filename, out_dir):
 
     num_config_nodes_processed = 0
     num_configurable_nodes = len(configNodes)
-    iterations = num_config_nodes_processed / 20
+    iterations = num_configurable_nodes / 20
 
     # for configuration node in the bitstream (e.g., multiplexer, LUT)
     for configNode in configNodes: 

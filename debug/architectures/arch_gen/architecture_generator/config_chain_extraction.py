@@ -2,11 +2,19 @@ import re
 
 def config_chain_extraction(top_level_file:str):
 
+    print("Extracting the configuration chain...")
+
     fh = open(top_level_file,"r+")
 
     lines = fh.readlines()
 
     moduleOrder = []
+
+    module_count = 0
+
+    # TODO: This is temporary
+    total_num_modules = 7393
+    intervals = total_num_modules // 100
 
     lastConfigChainNet = "ccff_head"
     while lastConfigChainNet != "ccff_tail":
@@ -21,6 +29,12 @@ def config_chain_extraction(top_level_file:str):
             if f".ccff_head({lastConfigChainNet})" in line:
             # if x := re.search(r"\t\t.ccff_head\((\S+)\);", line):
                 moduleOrder.append(currentModule)
+                module_count += 1
+
+                if module_count % intervals == 0:
+                    print(f"Modules Found: {module_count} / {total_num_modules} ({100 * module_count / total_num_modules}%)")
+
+                # print(f"Found Module #{module_count}: ")
                 # print(currentModule)
                 # print("\t Head: " + lastConfigChainNet)
                 findTail = True

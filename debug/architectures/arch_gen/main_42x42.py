@@ -9,7 +9,7 @@ from architecture_generator.bit_labeller import *
 from architecture_generator.window_maker import *
 from architecture_generator.make_readme import *
 
-from architecture_generator.windows_42x42 import *
+from architecture_generator.generate_windows import generate_windows
 
 import shutil
 import os
@@ -164,11 +164,11 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
     top_level = f"{results_dir}/SRC/fpga_top.v"
     moduleConfigOrder = config_chain_extraction(top_level)
 
-    xml_bitstream = f"{results_dir}/fabric_independent_bitstream.xml"
-    module_info, bit_mapping = bitstream_label(moduleConfigOrder, xml_bitstream, info_output_dir)
-
     with open(f'{info_output_dir}/module_config_order.pkl',"wb") as file:
         pickle.dump(moduleConfigOrder, file)
+
+    xml_bitstream = f"{results_dir}/fabric_independent_bitstream.xml"
+    module_info, bit_mapping = bitstream_label(moduleConfigOrder, xml_bitstream, info_output_dir)
 
     with open(f'{info_output_dir}/module_info.pkl',"wb") as file:
         pickle.dump(module_info, file)
@@ -182,7 +182,8 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
     # device_visualization(module_layout_grid, module_info, moduleConfigOrder)
 
     # Ensure that the grid positioning of all the windows are in alignment
-    validate_windows(module_layout_grid, windows_42x42)
+    windows = generate_windows(VERTICAL_CLB_COUNT)
+    # validate_windows(module_layout_grid, windows_42x42)
 
     # Copy bitstreams
     # NUM_DESIGNS = 20000
@@ -191,8 +192,6 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None):
         idx = f"{i}".zfill(5)
         bitstream_file = f"openfpga_flow/tasks/basic_tests/0_debug_task/{dir_name}/latest/k4_N4_tileable_40nm_new/bench{i}_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_bitstream.bit"
         shutil.copy(f"{bitstream_file}",f"{bitstreams_output_dir}/{idx}.bit")
-
-    windows = windows_42x42
 
     # Make windowed bitstream files
 
@@ -290,8 +289,8 @@ if __name__ == "__main__":
     # gen_4x4_designs()
     # analyze_4x4_designs()
 
-    gen_42x42_designs(14, route_chan_width=128)
-    # analyze_designs(VERTICAL_CLB_COUNT=42)
+    # gen_42x42_designs(14, route_chan_width=128)
+    analyze_designs(VERTICAL_CLB_COUNT=42)
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)
