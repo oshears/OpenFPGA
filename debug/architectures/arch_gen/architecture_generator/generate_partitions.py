@@ -1,4 +1,4 @@
-def generate_windows(device_width = 42, window_dim=(2,2)):
+def generate_partitions(device_width = 42, window_dim=(2,2)):
     windows = []
 
     horizontal_window_count = (device_width - 2) // 2

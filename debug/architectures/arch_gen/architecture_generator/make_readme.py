@@ -1,4 +1,4 @@
-def make_readme(outdir, VERTICAL_CLB_COUNT, lut_count, module_layout_grid, module_info, module_config_order, windows):
+def make_readme(outdir, VERTICAL_CLB_COUNT, lut_count, module_layout_grid, module_info, module_config_order, partitions):
 
     fh = open(f"{outdir}/README.md","w+")
 
@@ -8,7 +8,7 @@ def make_readme(outdir, VERTICAL_CLB_COUNT, lut_count, module_layout_grid, modul
     fh.write(f"- Architecture: {VERTICAL_CLB_COUNT}x{VERTICAL_CLB_COUNT}\n")
     fh.write(f"- LUT Count: {lut_count}\n")
     fh.write(f"- Number of Modules : {len(module_info)}\n")
-    fh.write(f"- Number of Windows (Partitions): {len(windows)}\n")
+    fh.write(f"- Number of Partitions: {len(partitions)}\n")
 
     fh.write("## Description:\n")
     fh.write(f"- Data includes {lut_count} LUTs per bitstream organized into random, cascading tiers.\n")

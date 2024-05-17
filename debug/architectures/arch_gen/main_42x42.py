@@ -8,8 +8,7 @@ from architecture_generator.config_chain_extraction import *
 from architecture_generator.bit_labeller import *
 from architecture_generator.window_maker import *
 from architecture_generator.make_readme import *
-
-from architecture_generator.generate_windows import generate_windows
+from architecture_generator.generate_partitions import generate_partitions
 
 import shutil
 import os
@@ -52,7 +51,7 @@ def gen_42x42_designs(NUM_DESIGNS=1, route_chan_width=42):
     NUM_LUTS = 42*42*4 - 4
     SIZE= "42x42"
 
-    dir_name = "openfpga__arch_42x42__tiered_luts__20240516"
+    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240517"
 
     results_dir = f"debug/architectures/arch_gen/results/{dir_name}"
     if os.path.exists(results_dir):
@@ -146,7 +145,7 @@ def validate_windows(grid, windows):
 def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load=True):
     # openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v
 
-    dir_name = "openfpga__arch_42x42__tiered_luts__20240516"
+    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240517"
 
     NUM_LUTS = VERTICAL_CLB_COUNT*VERTICAL_CLB_COUNT*4 - 4
     SIZE = f"{VERTICAL_CLB_COUNT}x{VERTICAL_CLB_COUNT}"
@@ -160,19 +159,24 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load
         pathlib.Path(bitstreams_output_dir).mkdir(parents=True, exist_ok=False)
 
 
-    # TODO: might want to make these data values into pickle files 
     top_level = f"{results_dir}/SRC/fpga_top.v"
+    shutil.copy(top_level,f"{info_output_dir}/fpga_top.v")
+
     # moduleConfigOrder = config_chain_extraction(top_level)
     moduleConfigOrder = None
     if load:
         with open(f'{info_output_dir}/module_config_order.pkl',"rb") as file:
             moduleConfigOrder = pickle.load(file)
+    else:
+        moduleConfigOrder = config_chain_extraction(top_level)
 
     if overwrite:
         with open(f'{info_output_dir}/module_config_order.pkl',"wb") as file:
             pickle.dump(moduleConfigOrder, file)
 
     xml_bitstream = f"{results_dir}/fabric_independent_bitstream.xml"
+    shutil.copy(xml_bitstream,f"{info_output_dir}/fabric_independent_bitstream.xml")
+
     # module_info, bit_mapping = bitstream_label(moduleConfigOrder, xml_bitstream, info_output_dir)
     module_info = None
     bit_mapping = None
@@ -183,6 +187,8 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load
         
         with open(f'{info_output_dir}/bit_mapping.pkl',"rb") as file:
             bit_mapping = pickle.load(file)
+    else:
+        module_info, bit_mapping = bitstream_label(moduleConfigOrder, xml_bitstream, info_output_dir)
 
     if overwrite:
         with open(f'{info_output_dir}/module_info.pkl',"wb") as file:
@@ -191,13 +197,11 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load
         with open(f'{info_output_dir}/bit_mapping.pkl',"wb") as file:
             pickle.dump(bit_mapping, file)
 
-    # return
-
     module_layout_grid = get_module_layout_grid(module_info, VERTICAL_CLB_COUNT)
     # device_visualization(module_layout_grid, module_info, moduleConfigOrder)
 
-    # Ensure that the grid positioning of all the windows are in alignment
-    windows = generate_windows(VERTICAL_CLB_COUNT)
+    partitions = generate_partitions(VERTICAL_CLB_COUNT)
+    # Ensure that the grid positioning of all the partitions are in alignment
     # validate_windows(module_layout_grid, windows_42x42)
 
     # Copy bitstreams
@@ -210,22 +214,29 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load
 
     # Make windowed bitstream files
 
-    # First let's make the directories and store a reference to them
-    window_dirs = []
-    for i in range(len(windows)):
+    # Make folder to contain window and partition files
+    window_dir = f"{output_dir}/window_0/"
+    if os.path.exists(window_dir):
+        shutil.rmtree(window_dir)
+    pathlib.Path(f"{output_dir}/window_0/_info").mkdir(parents=True, exist_ok=False)
 
-        # make window directory
-        window_dir = f"{output_dir}/partition_{i}"
-        window_dirs.append(window_dir)
-        if os.path.exists(window_dir):
-            shutil.rmtree(window_dir)
-        pathlib.Path(window_dir).mkdir(parents=True, exist_ok=False)
+
+    # First let's make the directories and store a reference to them
+    partition_dirs = []
+    for i in range(len(partitions)):
+
+        # make partition directory
+        partition_dir = f"{output_dir}/window_0/part_{i}"
+        partition_dirs.append(partition_dir)
+        if os.path.exists(partition_dir):
+            shutil.rmtree(partition_dir)
+        pathlib.Path(partition_dir).mkdir(parents=True, exist_ok=False)
     
-    # Now lets iterate through each bitstream and extract the windowed bits
+    # Now lets iterate through each bitstream and extract the partitioned bits
     bitstream_paths = glob.glob(f"{bitstreams_output_dir}/*")
     for index in range(len(bitstream_paths)):
         bitstream_progress = 100 * index // len(bitstream_paths)
-        if index % (len(bitstream_paths) // 10) == 0:
+        if index % (len(bitstream_paths) // 100) == 0:
             print(f"bitstreams processed: {bitstream_progress}%")
         
         string_index = f"{index}".zfill(5)
@@ -234,51 +245,51 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load
         bitstream_lines = bitstream_fh.readlines()[5:]
         bitstream_fh.close()
         
-        # Lets open a window file for this bitstream for each of the 4 window types
+        # Lets open a partition file for this bitstream for each of the partition locations
         fh_list = []
-        for i in range(len(window_dirs)):
-            window_dir = window_dirs[i]
-            fh = open(f"{window_dir}/{string_index}.partition{i}.bit","w+")
+        for i in range(len(partition_dirs)):
+            partition_dir = partition_dirs[i]
+            fh = open(f"{partition_dir}/{string_index}.part_{i}.bit","w+")
             fh_list.append(fh)
 
-        # Now lets go through each bit of the bitstream and determine which windows it should be copied into
+        # Now lets go through each bit of the bitstream and determine which partitions it should be copied into
         for bit_index in range(len(bitstream_lines)):
 
-            # Loop through each window
-            for window_index in range(len(windows)):
-                window = windows[window_index]
+            # Loop through each partition
+            for partition_index in range(len(partitions)):
+                partition = partitions[partition_index]
 
-                # If the bit belongs to a module that is part of the current window, then write it to the bitstream's window file
-                if bit_mapping[bit_index]["module name"] in window:
+                # If the bit belongs to a module that is part of the current partition, then write it to the bitstream's partition file
+                if bit_mapping[bit_index]["module name"] in partition:
                     bit = bitstream_lines[bit_index]
-                    fh_list[window_index].write(bit)
+                    fh_list[partition_index].write(bit)
         
-        # Now close all of the window files for this bitstream
+        # Now close all of the partition files for this bitstream
         for fh in fh_list:
             fh.close()
     
-    # Finally lets make a reference for each of the windows so we know the bit mappings
+    # Finally lets make a reference for each of the partition so we know the bit mappings
     bitstream_path = f"{bitstreams_output_dir}/00000.bit"
     bitstream_fh = open(bitstream_path, "r+")
     bitstream_lines = bitstream_fh.readlines()[5:]
     bitstream_fh.close()
     
-    # Lets open a window file for this bitstream for each of the 4 window types
-    for window_index in range(len(windows)):
-        window_progress = 100 * window_index / len(windows)
-        print(f"window mappings created: {window_progress}%")
+    # Lets open a partition file for this bitstream for each of the 4 partition types
+    for partition_index in range(len(partitions)):
+        partition_progress = 100 * partition_index / len(partitions)
+        print(f"partition mappings created: {partition_progress}%")
 
-        window_label_path= info_output_dir = f"debug/architectures/arch_gen/results/{dir_name}/_info"
-        fh = open(f"{window_label_path}/window_{window_index}_labels.csv","w+")
+        partition_label_path = f"debug/architectures/arch_gen/results/{dir_name}/window_0/_info"
+        fh = open(f"{partition_label_path}/part_{partition_index}_labels.csv","w+")
         fh.write("module_name,path,name,bit\n")
 
-        # Now lets go through each bit of the bitstream and determine which windows it should be copied into
+        # Now lets go through each bit of the bitstream and determine which partition it should be copied into
         for bit_index in range(len(bitstream_lines)):
 
-            window = windows[window_index]
+            partition = partitions[partition_index]
 
-            # If the bit belongs to a module that is part of the current window, then write it to the bitstream's window file
-            if bit_mapping[bit_index]["module name"] in window:
+            # If the bit belongs to a module that is part of the current partition, then write it to the bitstream's partition file
+            if bit_mapping[bit_index]["module name"] in partition:
                 bit = bitstream_lines[bit_index].strip()
 
                 bit_string = ""
@@ -292,7 +303,7 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load
         fh.close()
     
     # Lastly, make the readme for this data set
-    make_readme(output_dir, VERTICAL_CLB_COUNT, NUM_LUTS, module_layout_grid, module_info, moduleConfigOrder, windows)
+    make_readme(output_dir, VERTICAL_CLB_COUNT, NUM_LUTS, module_layout_grid, module_info, moduleConfigOrder, partitions)
 
 
 if __name__ == "__main__":
@@ -304,7 +315,7 @@ if __name__ == "__main__":
     # gen_4x4_designs()
     # analyze_4x4_designs()
 
-    # gen_42x42_designs(14, route_chan_width=128)
+    # gen_42x42_designs(50, route_chan_width=128)
     analyze_designs(VERTICAL_CLB_COUNT=42)
 
     # 2. Doubled Device Size, Tiered LUT Connections

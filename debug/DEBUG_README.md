@@ -10,6 +10,7 @@ python3 openfpga_flow/scripts/run_fpga_task.py fpga_verilog/adder/hard_adder
 python3 openfpga_flow/tasks/basic_tests/0_debug_task/design_analysis --maxthreads=8 --debug
 python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/fpga_40x40_clb --maxthreads=8 --debug
 python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/openfpga__arch_42x42__tiered_luts__20240516 --maxthreads=8 --debug
+python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240517/ --maxthreads=8 --debug
 ```
 
 ---
@@ -64,4 +65,6 @@ python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/0_debug_task/random_d
 rm -rf /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/random_bitstreams/*.csv
 
 tar -czvf bitstreams.tar.gz random_bitstreams/
+
+rsync -avzh --progress --stats openfpga__arch_42x42__tiered_luts__20240516.tar.gz  shears@yoda.ads.isi.edu:~/Downloads
 ```
