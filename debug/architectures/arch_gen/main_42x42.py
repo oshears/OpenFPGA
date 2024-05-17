@@ -142,7 +142,7 @@ def validate_windows(grid, windows):
                     if grid[x][y] in window:
                         window_order += 1
 
-def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load=True):
+def analyze_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS, dataset_name=None, overwrite=False, load=True):
     # openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v
 
     dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240517"
@@ -206,11 +206,13 @@ def analyze_designs(VERTICAL_CLB_COUNT, dataset_name=None, overwrite=False, load
 
     # Copy bitstreams
     # NUM_DESIGNS = 20000
-    NUM_DESIGNS = 14
+    # NUM_DESIGNS = 50
     for i in range(NUM_DESIGNS):
         idx = f"{i}".zfill(5)
         bitstream_file = f"openfpga_flow/tasks/basic_tests/0_debug_task/{dir_name}/latest/k4_N4_tileable_40nm_new/bench{i}_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_bitstream.bit"
         shutil.copy(f"{bitstream_file}",f"{bitstreams_output_dir}/{idx}.bit")
+
+    # return
 
     # Make windowed bitstream files
 
@@ -316,7 +318,7 @@ if __name__ == "__main__":
     # analyze_4x4_designs()
 
     # gen_42x42_designs(50, route_chan_width=128)
-    analyze_designs(VERTICAL_CLB_COUNT=42)
+    analyze_designs(VERTICAL_CLB_COUNT=42, NUM_DESIGNS=50)
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)
