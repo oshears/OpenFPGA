@@ -47,11 +47,11 @@ import pickle
 #     # python3 openfpga_flow/scripts/run_fpga_task.py basic_tests/0_debug_task/fpga_4x4_clb
 
 def gen_42x42_designs(NUM_DESIGNS=1, route_chan_width=42):
-
-    NUM_LUTS = 42*42*4 - 4
+    RESERVED_CLBS = 32
+    NUM_LUTS = 42*42*4 - (RESERVED_CLBS * 4)
     SIZE= "42x42"
 
-    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240517"
+    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240520"
 
     results_dir = f"debug/architectures/arch_gen/results/{dir_name}"
     if os.path.exists(results_dir):
@@ -145,7 +145,7 @@ def validate_windows(grid, windows):
 def analyze_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS, dataset_name=None, overwrite=False, load=True):
     # openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v
 
-    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240517"
+    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240520"
 
     NUM_LUTS = VERTICAL_CLB_COUNT*VERTICAL_CLB_COUNT*4 - 4
     SIZE = f"{VERTICAL_CLB_COUNT}x{VERTICAL_CLB_COUNT}"
@@ -158,9 +158,27 @@ def analyze_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS, dataset_name=None, overwrit
     if not os.path.exists(bitstreams_output_dir):
         pathlib.Path(bitstreams_output_dir).mkdir(parents=True, exist_ok=False)
 
+    # Copy Architecture Files
 
     top_level = f"{results_dir}/SRC/fpga_top.v"
     shutil.copy(top_level,f"{info_output_dir}/fpga_top.v")
+
+    xml_bitstream = f"{results_dir}/fabric_independent_bitstream.xml"
+    shutil.copy(xml_bitstream,f"{info_output_dir}/fabric_independent_bitstream.xml")
+
+    # Copy Netlist Files
+    netlist_src = f"{results_dir}/SRC"
+    shutil.copytree(netlist_src, f"{info_output_dir}/SRC")
+
+    # Copy bitstreams
+    # NUM_DESIGNS = 20000
+    # NUM_DESIGNS = 50
+    for i in range(NUM_DESIGNS):
+        idx = f"{i}".zfill(5)
+        bitstream_file = f"openfpga_flow/tasks/basic_tests/0_debug_task/{dir_name}/latest/k4_N4_tileable_40nm_new/bench{i}_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_bitstream.bit"
+        shutil.copy(f"{bitstream_file}",f"{bitstreams_output_dir}/{idx}.bit")
+    
+    return
 
     # moduleConfigOrder = config_chain_extraction(top_level)
     moduleConfigOrder = None
@@ -173,9 +191,6 @@ def analyze_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS, dataset_name=None, overwrit
     if overwrite:
         with open(f'{info_output_dir}/module_config_order.pkl',"wb") as file:
             pickle.dump(moduleConfigOrder, file)
-
-    xml_bitstream = f"{results_dir}/fabric_independent_bitstream.xml"
-    shutil.copy(xml_bitstream,f"{info_output_dir}/fabric_independent_bitstream.xml")
 
     # module_info, bit_mapping = bitstream_label(moduleConfigOrder, xml_bitstream, info_output_dir)
     module_info = None
@@ -203,14 +218,6 @@ def analyze_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS, dataset_name=None, overwrit
     partitions = generate_partitions(VERTICAL_CLB_COUNT)
     # Ensure that the grid positioning of all the partitions are in alignment
     # validate_windows(module_layout_grid, windows_42x42)
-
-    # Copy bitstreams
-    # NUM_DESIGNS = 20000
-    # NUM_DESIGNS = 50
-    for i in range(NUM_DESIGNS):
-        idx = f"{i}".zfill(5)
-        bitstream_file = f"openfpga_flow/tasks/basic_tests/0_debug_task/{dir_name}/latest/k4_N4_tileable_40nm_new/bench{i}_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_bitstream.bit"
-        shutil.copy(f"{bitstream_file}",f"{bitstreams_output_dir}/{idx}.bit")
 
     # return
 
@@ -317,7 +324,7 @@ if __name__ == "__main__":
     # gen_4x4_designs()
     # analyze_4x4_designs()
 
-    # gen_42x42_designs(50, route_chan_width=128)
+    # gen_42x42_designs(50, route_chan_width=256)
     analyze_designs(VERTICAL_CLB_COUNT=42, NUM_DESIGNS=50)
 
     # 2. Doubled Device Size, Tiered LUT Connections

@@ -8,6 +8,7 @@ def genNewBitstreams(modules:Union[str, Module], module_order, window=None, out_
     bitCount = 0
 
     fh = open(f"/home/oshears/Documents/openfpga/OpenFPGA/debug/bitstream_validator/results/{out_filename}","w+")
+    fh1 = open(f"/home/oshears/Documents/openfpga/OpenFPGA/debug/bitstream_validator/results/{out_filename}.bit","w+")
 
     fh.write("bit index,bit value,module,name,type,path,description,sinks\n")
 
@@ -16,7 +17,10 @@ def genNewBitstreams(modules:Union[str, Module], module_order, window=None, out_
             module:Module = modules[moduleName]
 
             # for mux in module.nodes:
-            for muxIdx in range(len(module.nodes)-1,-1,-1):
+            # TODO: DEBUG: Need to figure out why the modules switched/flipped when I loaded results from arch_gen's .pkl files
+            # I am assuming the results are not switched/flipped when I run with bit_validator's script
+            # for muxIdx in range(len(module.nodes)-1,-1,-1):
+            for muxIdx in range(len(module.nodes)):
                 mux:RoutingNode = module.nodes[muxIdx]
                 bitLine = ""
                 bitLine += f"{moduleName},"
@@ -33,6 +37,8 @@ def genNewBitstreams(modules:Union[str, Module], module_order, window=None, out_
                     muxDrives = ",".join(mux.sinks) if mux.sinks is not None else "not specified"
 
                     fh.write(f"{bitCount}," + f"{mux.values[bitIdx]}," + bitLine + f"{muxDrives}" + "\n")
+
+                    fh1.write(f"{mux.values[bitIdx]}\n")
 
                     bitCount += 1
     

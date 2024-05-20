@@ -106,7 +106,7 @@ def make_tiered_il_design(design_dir, NUM_LUTS, device_width):
         MIN_DEVICE_OUTPUTS = 4
         MAX_DEVICE_OUTPUTS = NUM_DEVICE_IO - 4
 
-        random.seed(0)
+        # random.seed(0)
         
         # while there are still LUTs to be placed
         while luts_remaining > 0:
@@ -121,7 +121,7 @@ def make_tiered_il_design(design_dir, NUM_LUTS, device_width):
                 # NUM_DEVICE_INPUTS = NUM_DEVICE_IO - NUM_DEVICE_OUTPUTS
                 NUM_DEVICE_INPUTS = 4
 
-                NUM_DEVICE_OUTPUTS = random.randint(MIN_DEVICE_OUTPUTS, MAX_DEVICE_OUTPUTS)
+                NUM_DEVICE_OUTPUTS = random.randint(MIN_DEVICE_OUTPUTS, min(MAX_DEVICE_OUTPUTS,NUM_LUTS))
                 
                 luts_in_tier = NUM_DEVICE_OUTPUTS
                 
