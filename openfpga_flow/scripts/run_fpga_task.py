@@ -267,7 +267,9 @@ def generate_each_task_actions(taskname):
 
     # Check if specified benchmark files exist
     benchmark_list = []
+    SynthSectionItems = SynthSection.items()
     for bech_name, each_benchmark in task_conf["BENCHMARKS"].items():
+        print(f"setting up {bech_name}")
         # Declare varible to store paramteres for current benchmark
         CurrBenchPara = {}
 
@@ -329,10 +331,20 @@ def generate_each_task_actions(taskname):
             bech_name + "_chan_width", fallback=chan_width_common
         )
         CurrBenchPara["benchVariable"] = []
+
+        # OYS: Remove this when you need to run many tasks!
+        ## this takes a long time with each added bench
         for eachKey, eachValue in SynthSection.items():
+        # for eachKey, eachValue in SynthSectionItems:
             if bech_name in eachKey:
                 eachKey = eachKey.replace(bech_name + "_", "").upper()
                 CurrBenchPara["benchVariable"] += [f"--{eachKey}", eachValue]
+
+        # SynthSection[f"{bech_name}_top"].replace(bech_name + "_", "").upper()
+        # eachKey = f"{bech_name}_top".replace(bech_name + "_", "").upper()
+        # CurrBenchPara["benchVariable"] += [f"--{eachKey}", SynthSection[f"{bech_name}_top"]]
+        # eachKey = f"{bech_name}_chan_width".replace(bech_name + "_", "").upper()
+        # CurrBenchPara["benchVariable"] += [f"--{eachKey}", SynthSection[f"{bech_name}_chan_width"]]
 
         for param, value in yosys_params_common.items():
             if not param in CurrBenchPara["benchVariable"] and value:
@@ -396,9 +408,11 @@ def generate_each_task_actions(taskname):
                         "bench" + str(benchmark_list.index(bench)) + "_" + bench["top_module"],
                         lbl,
                     )
+                    print(flow_run_dir)
                 else:
                     flow_run_dir = get_flow_rundir(arch, bench["top_module"], lbl)
-
+                    print(flow_run_dir)
+                    
                 command = create_run_command(
                     curr_job_dir=flow_run_dir,
                     archfile=arch,
@@ -535,7 +549,7 @@ def strip_child_logger_info(line):
 
 def run_single_script(s, eachJob, job_list):
     with s:
-        thread_name = threading.currentThread().getName()
+        thread_name = threading.current_thread().getName()
         eachJob["starttime"] = time.time()
         try:
             logfile = "%s_out.log" % thread_name
@@ -556,6 +570,7 @@ def run_single_script(s, eachJob, job_list):
                     universal_newlines=True,
                 )
                 for line in process.stdout:
+                    # print(f"line: {line}")
                     if args.show_thread_logs:
                         strip_child_logger_info(line[:-1])
                     sys.stdout.buffer.flush()

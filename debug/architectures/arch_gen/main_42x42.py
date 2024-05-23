@@ -51,7 +51,7 @@ def gen_42x42_designs(NUM_DESIGNS=1, route_chan_width=42):
     NUM_LUTS = 42*42*4 - (RESERVED_CLBS * 4)
     SIZE= "42x42"
 
-    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240520"
+    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240522"
 
     results_dir = f"debug/architectures/arch_gen/results/{dir_name}"
     if os.path.exists(results_dir):
@@ -145,7 +145,7 @@ def validate_windows(grid, windows):
 def analyze_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS, dataset_name=None, overwrite=False, load=True):
     # openfpga_flow/tasks/basic_tests/0_debug_task/fpga_4x4_clb/latest/k4_N4_tileable_40nm_new/bench0_fpga_design/MIN_ROUTE_CHAN_WIDTH/SRC/fpga_top.v
 
-    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240520"
+    dir_name = "openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240522"
 
     NUM_LUTS = VERTICAL_CLB_COUNT*VERTICAL_CLB_COUNT*4 - 4
     SIZE = f"{VERTICAL_CLB_COUNT}x{VERTICAL_CLB_COUNT}"
@@ -160,15 +160,16 @@ def analyze_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS, dataset_name=None, overwrit
 
     # Copy Architecture Files
 
-    top_level = f"{results_dir}/SRC/fpga_top.v"
-    shutil.copy(top_level,f"{info_output_dir}/fpga_top.v")
+    # top_level = f"{results_dir}/SRC/fpga_top.v"
+    # shutil.copy(top_level,f"{info_output_dir}/fpga_top.v")
 
     xml_bitstream = f"{results_dir}/fabric_independent_bitstream.xml"
-    shutil.copy(xml_bitstream,f"{info_output_dir}/fabric_independent_bitstream.xml")
+    if os.path.exists(xml_bitstream):
+        shutil.copy(xml_bitstream,f"{info_output_dir}/fabric_independent_bitstream.xml")
 
-    # Copy Netlist Files
-    netlist_src = f"{results_dir}/SRC"
-    shutil.copytree(netlist_src, f"{info_output_dir}/SRC")
+    # # Copy Netlist Files
+    # netlist_src = f"{results_dir}/SRC"
+    # shutil.copytree(netlist_src, f"{info_output_dir}/SRC")
 
     # Copy bitstreams
     # NUM_DESIGNS = 20000
@@ -176,7 +177,8 @@ def analyze_designs(VERTICAL_CLB_COUNT, NUM_DESIGNS, dataset_name=None, overwrit
     for i in range(NUM_DESIGNS):
         idx = f"{i}".zfill(5)
         bitstream_file = f"openfpga_flow/tasks/basic_tests/0_debug_task/{dir_name}/latest/k4_N4_tileable_40nm_new/bench{i}_fpga_design/MIN_ROUTE_CHAN_WIDTH/fabric_bitstream.bit"
-        shutil.copy(f"{bitstream_file}",f"{bitstreams_output_dir}/{idx}.bit")
+        if os.path.exists(bitstream_file):
+            shutil.copy(f"{bitstream_file}",f"{bitstreams_output_dir}/{idx}.bit")
     
     return
 
@@ -324,8 +326,8 @@ if __name__ == "__main__":
     # gen_4x4_designs()
     # analyze_4x4_designs()
 
-    # gen_42x42_designs(50, route_chan_width=256)
-    analyze_designs(VERTICAL_CLB_COUNT=42, NUM_DESIGNS=50)
+    # gen_42x42_designs(200, route_chan_width=300)
+    analyze_designs(VERTICAL_CLB_COUNT=42, NUM_DESIGNS=200)
 
     # 2. Doubled Device Size, Tiered LUT Connections
     # gen_4x4_designs(tiered_luts=True)

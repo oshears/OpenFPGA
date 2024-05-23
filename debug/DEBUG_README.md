@@ -13,6 +13,8 @@ python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0
 python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240517/ --maxthreads=8 --debug
 
 python3 /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/arch_gen/main_42x42.py && python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240520/ --maxthreads=8
+
+python3 /home/oshears/Documents/openfpga/OpenFPGA/debug/architectures/arch_gen/main_42x42.py && python3 openfpga_flow/scripts/run_fpga_task.py openfpga_flow/tasks/basic_tests/0_debug_task/openfpga__arch_42x42__windows_1__partitions_400__tiered_luts__20240522/ --maxthreads=8
 ```
 
 ---

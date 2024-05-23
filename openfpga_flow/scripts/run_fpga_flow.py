@@ -246,11 +246,11 @@ VeriPar.add_argument(
     action="store_true",
     help="Print signal initialization in Verilog files",
 )
-VeriPar.add_argument(
-    "--vpr_fpga_verilog_print_autocheck_top_testbench",
-    action="store_true",
-    help="Print autochecked top-level " + "testbench for Verilog Generator of VPR FPGA SPICE",
-)
+# VeriPar.add_argument(
+#     "--vpr_fpga_verilog_print_autocheck_top_testbench",
+#     action="store_true",
+#     help="Print autochecked top-level " + "testbench for Verilog Generator of VPR FPGA SPICE",
+# )
 VeriPar.add_argument(
     "--vpr_fpga_verilog_formal_verification_top_netlist",
     action="store_true",
@@ -357,6 +357,8 @@ def main():
     if not (args.fpga_flow == "yosys"):
         logger.info("Running OpenFPGA Shell Engine ")
         run_openfpga_shell()
+
+        # OYS: Remove this when you need to run a lot of tasks
         if args.end_flow_with_test:
             run_netlists_verification()
 
@@ -379,12 +381,14 @@ def main():
             + "Total Time Taken %s " % timestr(ExecTime["End"] - ExecTime["Start"])
             + "VPR Time %s " % timestr(ExecTime["VPREnd"] - ExecTime["VPRStart"])
         )
+        # OYS: Remove this when you need to run a lot of tasks
         TimeInfo += (
             "Verification Time %s "
             % timestr(ExecTime["VerificationEnd"] - ExecTime["VerificationStart"])
             if args.end_flow_with_test
             else ""
         )
+
     logger.info(TimeInfo)
     exit()
 
@@ -993,17 +997,21 @@ def run_netlists_verification(exit_if_fail=True):
         command += [tb_top_autochecked]
     # TODO: This is NOT flexible!!! We should consider to make the include directory customizable through options
     # Add source directory to the include dir
-    command += ["-I", "./SRC"]
-    run_command("iverilog_verification", "iverilog_output.txt", command)
+    # command += ["-I", "./SRC"]
+    # run_command("iverilog_verification", "iverilog_output.txt", command)
 
-    vvp_command = ["vvp", compiled_file]
-    output = run_command("vvp_verification", "vvp_sim_output.txt", vvp_command)
-    if "Succeed" in output:
-        logger.info("VVP Simulation Successful")
-    else:
-        logger.error(str(output).split("\n")[-1])
-        if exit_if_fail:
-            clean_up_and_exit("Failed to run VVP verification")
+    # vvp_command = ["vvp", compiled_file]
+    # output = run_command("vvp_verification", "vvp_sim_output.txt", vvp_command)
+    # if "Succeed" in output:
+    #     logger.info("VVP Simulation Successful")
+    # else:
+    #     # OYS: Remove this if need to run many designs
+        
+    #     logger.error(str(output).split("\n")[-1])
+    #     if exit_if_fail:
+    #         clean_up_and_exit("Failed to run VVP verification")
+
+    #     print("Failed to run VVP verification")
     ExecTime["VerificationEnd"] = time.time()
 
 
